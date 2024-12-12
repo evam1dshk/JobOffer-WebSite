@@ -16,4 +16,10 @@
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\JobOffer.Data\JobOffer.Data.csproj" />
+    <ProjectReference Include="..\JobOffer.Services\JobOffer.Services.csproj" />
+    <ProjectReference Include="..\JobOffer.Web\JobOffer.Web.csproj" />
+  </ItemGroup>
+
 </Project>
