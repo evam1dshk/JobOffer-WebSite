@@ -1,50 +1,156 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿<html lang="en">
+@using JobListingSite.Data.Entities
+@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - JobListingSite.Web</title>
+    <title>@ViewData["Title"] - JobListingSite</title>
+
+    <!-- Bootstrap & Template CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="~/css/linearicons.css" />
+    <link rel="stylesheet" href="~/css/magnific-popup.css" />
+    <link rel="stylesheet" href="~/css/main.css" />
+    <link rel="stylesheet" href="~/css/nice-select.css" />
+    <link rel="stylesheet" href="~/css/owl.carousel.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/JobListingSite.Web.styles.css" asp-append-version="true" />
 </head>
+
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">JobListingSite.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
+    <!-- Header -->
+    <header id="header">
+        <div class="container">
+            <div class="row align-items-center justify-content-between d-flex">
+                <div id="logo">
+                    <a asp-controller="Home" asp-action="Index">
+                        <img src="~/img/logo.png" alt="JobListingSite Logo" />
+                    </a>
                 </div>
+                <nav id="nav-menu-container">
+                    <ul class="nav-menu">
+                        <li class="menu-active"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li><a asp-controller="Home" asp-action="About">About Us</a></li>
+                        <li><a asp-controller="Category" asp-action="Index">Categories</a></li>
+                        <li><a asp-controller="Pricing" asp-action="Index">Pricing</a></li>
+                        <li><a asp-controller="Blog" asp-action="Index">Blog</a></li>
+                        <li><a asp-controller="Contact" asp-action="Index">Contact</a></li>
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li><a asp-controller="Admin" asp-action="Index">Admin Panel</a></li>
+                            }
+
+                            @if (User.IsInRole("HR"))
+                            {
+                                <li><a asp-controller="HR" asp-action="ManageJobs">Manage Jobs</a></li>
+                            }
+
+                            <li>
+                                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                    Hello, @User.Identity?.Name!
+                                </a>
+                            </li>
+                            <li>
+                                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" method="post">
+                                    <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
+                                    <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a></li>
+                            <li><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a></li>
+                        }
+                    </ul>
+                </nav>
             </div>
-        </nav>
+        </div>
     </header>
-    <div class="container">
+
+    <!-- Main Content -->
+    <div class="container flex-grow-1 my-5">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <!-- Footer -->
+    <footer class="footer-area section-gap">
         <div class="container">
-            &copy; 2025 - JobListingSite.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row">
+                <div class="col-lg-3 col-md-12">
+                    <div class="single-footer-widget">
+                        <h6>Top Products</h6>
+                        <ul class="footer-nav">
+                            <li><a href="#">Managed Website</a></li>
+                            <li><a href="#">Manage Reputation</a></li>
+                            <li><a href="#">Power Tools</a></li>
+                            <li><a href="#">Marketing Service</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <div class="single-footer-widget newsletter">
+                        <h6>Newsletter</h6>
+                        <p>Subscribe for updates and job alerts.</p>
+                        <form class="form-inline">
+                            <div class="form-group row w-100">
+                                <div class="col-lg-8 col-md-12">
+                                    <input type="email" placeholder="Enter Email" required class="form-control">
+                                </div>
+                                <div class="col-lg-4 col-md-12">
+                                    <button class="nw-btn primary-btn">Subscribe</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-12">
+                    <div class="single-footer-widget mail-chimp">
+                        <h6 class="mb-20">Follow Us</h6>
+                        <div class="footer-social">
+                            <a href="#"><i class="fa fa-facebook"></i></a>
+                            <a href="#"><i class="fa fa-twitter"></i></a>
+                            <a href="#"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row footer-bottom d-flex justify-content-between">
+                <p class="col-lg-8 col-sm-12 footer-text m-0 text-white">
+                    Copyright &copy;<script>document.write(new Date().getFullYear());</script>
+                    All rights reserved | Built for JobListingSite
+                </p>
+            </div>
         </div>
     </footer>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/main.js"></script>
+    <script src="~/js/easing.min.js"></script>
+    <script src="~/js/hoverIntent.js"></script>
+    <script src="~/js/jquery.ajaxchimp.min.js"></script>
+    <script src="~/js/jquery.nice-select.min.js"></script>
+    <script src="~/js/jquery.sticky.js"></script>
+    <script src="~/js/jquery.magnific-popup.min.js"></script>
+    <script src="~/js/mail-script.js"></script>
+    <script src="~/js/owl.carousel.min.js"></script>
+    <script src="~/js/parallax.min.js"></script>
+    <script src="~/js/slick.js"></script>
+    <script src="~/js/superfish.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

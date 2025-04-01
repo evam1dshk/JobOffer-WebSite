@@ -1,8 +1,48 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Find Your Dream Job";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+<section class="banner-area relative" id="home">
+    <div class="overlay overlay-bg"></div>
+    <div class="container">
+        <div class="row fullscreen d-flex align-items-center justify-content-center">
+            <div class="banner-content col-lg-12">
+                <h1 class="text-white">
+                    <span>1500+</span> Jobs posted last week
+                </h1>
+                <p class="text-white">
+                    <span>Search by tags:</span> Technology, Business, Consulting, IT Company, Design, Development
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="hero-section text-center text-white d-flex align-items-center justify-content-center">
+    <div class="container">
+        <h1 class="display-4">Find Your Dream Job</h1>
+        <p class="lead">Search from thousands of job listings across different industries.</p>
+        <form class="search-bar d-flex justify-content-center">
+            <input type="text" class="form-control form-control-lg w-50" placeholder="Job title, keyword, or company">
+            <button type="submit" class="btn btn-primary btn-lg ms-2">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="container my-5">
+    <h2 class="text-center">Recent Job Listings</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Software Developer</h5>
+                    <p class="card-text">Company: TechCorp</p>
+                    <p class="text-muted">Location: Remote</p>
+                    <a href="#" class="btn btn-outline-primary">Apply Now</a>
+                </div>
+            </div>
+        </div>
+        <!-- Repeat similar cards -->
+    </div>
 </div>

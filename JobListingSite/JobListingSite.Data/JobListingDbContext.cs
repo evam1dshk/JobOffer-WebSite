@@ -12,10 +12,10 @@ namespace JobListingSite.Web.Data
         {
         }
 
-        public DbSet<Category> Categories { get; set; }
-        public DbSet<Offer> Offers { get; set; }
-        public DbSet<Profile> Profiles { get; set; }
-        public DbSet<JobApplication> JobApplications { get; set; }
+        public DbSet<Category> Categories { get; set; } = null!;
+        public DbSet<Offer> Offers { get; set; } = null!;
+        public DbSet<Profile> Profiles { get; set; } = null!;
+        public DbSet<JobApplication> JobApplications { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
