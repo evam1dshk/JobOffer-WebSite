@@ -50,7 +50,9 @@
 
                             @if (User.IsInRole("HR"))
                             {
-                                <li><a asp-controller="HR" asp-action="ManageJobs">Manage Jobs</a></li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="HR" asp-action="ManageJobs">Manage Jobs</a>
+                                </li>
                             }
 
                             <li>

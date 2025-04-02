@@ -23,5 +23,8 @@ namespace JobListingSite.Data.Entities
         public string? CompanyId { get; set; }
         public User? Company { get; set; }
         public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
+
+        [DataType(DataType.DateTime)]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

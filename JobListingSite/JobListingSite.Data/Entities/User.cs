@@ -16,7 +16,7 @@ namespace JobListingSite.Data.Entities
         public bool IsCompany { get; set; }
         public bool IsApproved { get; set; }
         public Profile? Profile { get; set; }
-        public ICollection<Offer> Offers { get; set; } = new List<Offer>(); // Companies post job offers
+        public ICollection<Offer> Offers { get; set; } = new List<Offer>();
         public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
     }
 }
