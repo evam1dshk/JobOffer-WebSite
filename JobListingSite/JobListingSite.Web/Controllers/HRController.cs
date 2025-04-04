@@ -1,5 +1,7 @@
 ﻿using JobListingSite.Data.Entities;
+using JobListingSite.Data.Enums;
 using JobListingSite.Web.Data;
+using JobListingSite.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,7 +11,7 @@ using X.PagedList;
 
 namespace JobListingSite.Web.Controllers
 {
-    [Authorize(Roles = "HR")]
+    [Authorize(Roles = "HR, Admin" )]
     public class HRController : Controller
     {
         private readonly JobListingDbContext _context;
@@ -19,119 +21,161 @@ namespace JobListingSite.Web.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = "HR")]
-        public async Task<IActionResult> ManageJobs(int page = 1)
+        public async Task<IActionResult> ManageJobs(string search, int page = 1)
         {
-            var pageSize = 10; // Set the page size for pagination
-            var jobOffers = await _context.Offers.Include(o => o.Category)
-                                                  .OrderBy(o => o.Title) // You can customize this sorting
-                                                  .ToPagedListAsync(page, pageSize);
+            var pageSize = 10;
+            var query = _context.Offers
+                                .Include(o => o.Category)
+                                .Include(o => o.JobApplications)
+                                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(o => o.Title.Contains(search) || o.Category.Name.Contains(search));
+            }
+
+            // Stats
+            ViewBag.TotalApplicationsCount = await _context.JobApplications.CountAsync();
+            ViewBag.PendingApplicationsCount = await _context.JobApplications
+                                                            .Where(a => a.Status == ApplicationStatus.Pending)
+                                                            .Where(a => a.Status == ApplicationStatus.Pending)
+                                                            .CountAsync();
+
+            var jobOffers = await query.OrderBy(o => o.Title).ToPagedListAsync(page, pageSize);
+
+            ViewBag.SearchQuery = search;
             return View(jobOffers);
         }
 
         // GET: Create job form
         public IActionResult CreateJob()
         {
-            // Get categories from the database
-            var categories = _context.Categories.ToList();
+            var categories = _context.Categories
+                     .Select(c => new SelectListItem
+                     {
+                         Value = c.CategoryId.ToString(),
+                         Text = c.Name
+                     })
+                     .ToList();
 
-            // Convert the List<Category> to a SelectList of SelectListItems
-            var categorySelectList = categories.Select(c => new SelectListItem
+            var viewModel = new JobFormViewModel
             {
-                Value = c.CategoryId.ToString(),
-                Text = c.Name
-            }).ToList();
+                Categories = categories
+            };
 
-            // Pass the SelectList to the view
-            ViewBag.Categories = categorySelectList;
-
-            return View();
+            return View(viewModel);
         }
 
-        // Add job to database
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateJob(Offer model)
+        public async Task<IActionResult> CreateJob(JobFormViewModel model)
         {
-            if (ModelState.IsValid)
+            Console.WriteLine("POST CreateJob called"); // Add this
+
+            if (!ModelState.IsValid)
             {
-                _context.Offers.Add(model);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Job offer created successfully!";
+                Console.WriteLine("ModelState is invalid"); // Add this
+                model.Categories = _context.Categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    }).ToList();
+
+                return View(model);
+            }
+
+            var offer = new Offer
+            {
+                Title = model.Title,
+                Description = model.Description,
+                Salary = model.Salary,
+                CategoryId = model.CategoryId
+            };
+
+            _context.Offers.Add(offer);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Job offer created successfully!";
+            return RedirectToAction(nameof(ManageJobs));
+        }
+
+        // Example for POST-Edit action
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditJob(int id, JobFormViewModel model)
+        {
+            if (id != model.OfferId)
+            {
+                TempData["ErrorMessage"] = "Invalid job offer ID.";
                 return RedirectToAction(nameof(ManageJobs));
             }
 
-            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name");
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditJob(int id, Offer model)
-        {
-            if (id != model.OfferId) return NotFound();
-
-            // Retrieve the existing job offer
             var existingJob = await _context.Offers.FindAsync(id);
             if (existingJob == null) return NotFound();
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    existingJob.Title = model.Title;
-                    existingJob.Description = model.Description;
-                    existingJob.Salary = model.Salary;
-                    existingJob.CategoryId = model.CategoryId;
+                existingJob.Title = model.Title;
+                existingJob.Description = model.Description;
+                existingJob.Salary = model.Salary;
+                existingJob.CategoryId = model.CategoryId;
 
-                    // Save changes
-                    _context.Update(existingJob);
-                    await _context.SaveChangesAsync();
-
-                    TempData["SuccessMessage"] = "Job offer updated successfully!";
-                    return RedirectToAction(nameof(ManageJobs));
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    return NotFound();
-                }
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Job offer updated successfully!";
+                return RedirectToAction(nameof(ManageJobs));
             }
 
-            // If the model state is invalid, return the form with existing data
-            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name", model.CategoryId);
+            model.Categories = await _context.Categories
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
+                }).ToListAsync();
+
             return View(model);
         }
 
-        public async Task<IActionResult> EditJob(int id)
-        {
-            var job = await _context.Offers.FindAsync(id);
-            if (job == null) return NotFound();
+    public async Task<IActionResult> EditJob(int id)
+    {
+        var job = await _context.Offers.FindAsync(id);
+        if (job == null) return NotFound();
 
-            // Convert categories into SelectListItems
-            var categories = _context.Categories.ToList();
-            var categorySelectList = categories.Select(c => new SelectListItem
+        var categories = await _context.Categories
+            .Select(c => new SelectListItem
             {
                 Value = c.CategoryId.ToString(),
                 Text = c.Name
-            }).ToList();
+            }).ToListAsync();
 
-            // Pass the SelectList to the view
-            ViewBag.Categories = categorySelectList;
+        var viewModel = new JobFormViewModel
+        {
+            OfferId = job.OfferId,
+            Title = job.Title,
+            Description = job.Description,
+            Salary = job.Salary,
+            CategoryId = job.CategoryId,
+            Categories = categories
+        };
 
-            return View(job);
-        }
-
+        return View(viewModel);
+    }
 
         public async Task<IActionResult> DeleteJob(int id)
         {
             var job = await _context.Offers.FindAsync(id);
-            if (job == null) return NotFound();
+            if (job == null)
+            {
+                TempData["ErrorMessage"] = "Job offer not found!";
+                return RedirectToAction(nameof(ManageJobs));
+            }
 
             _context.Offers.Remove(job);
             await _context.SaveChangesAsync();
+
             TempData["SuccessMessage"] = "Job offer deleted successfully!";
             return RedirectToAction(nameof(ManageJobs));
         }
-
     }
 }

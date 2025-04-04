@@ -21,7 +21,7 @@ namespace JobListingSite.Data.Entities
         public Category? Category { get; set; }
 
         public string? CompanyId { get; set; }
-        public User? Company { get; set; }
+        public User? Company { get; set; } 
         public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
 
         [DataType(DataType.DateTime)]

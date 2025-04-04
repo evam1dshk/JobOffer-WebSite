@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JobListingSite.Data.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,5 +18,7 @@ namespace JobListingSite.Data.Entities
         public Offer Offer { get; set; } = null!;
 
         public DateTime AppliedOn { get; set; } = DateTime.UtcNow;
+
+        public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
     }
 }
