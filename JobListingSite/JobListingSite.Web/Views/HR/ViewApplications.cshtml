@@ -1,0 +1,115 @@
+﻿@using JobListingSite.Data.Enums
+@model IEnumerable<JobApplication>
+
+<h2>Applications for Job</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @TempData["WarningMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<a asp-action="ManageJobs" class="btn btn-secondary mb-3">
+    ← Back to Manage Jobs
+</a>
+
+
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning">@TempData["WarningMessage"]</div>
+}
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Applicant</th>
+            <th>Applied On</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+
+
+        @foreach (var app in Model)
+        {
+            <tr>
+                <td>@app.User.Name</td>
+                <td>@app.AppliedOn.ToShortDateString()</td>
+                <td>
+                    <span class="badge rounded-pill px-3
+                     @(app.Status == ApplicationStatus.Pending ? "bg-warning text-dark" :
+                      app.Status == ApplicationStatus.Approved ? "bg-success" : "bg-danger")">
+                        @app.Status
+                    </span>
+                </td>
+
+                <td>
+                    <span class="badge rounded-pill
+                     @(app.Status == ApplicationStatus.Pending ? "bg-warning text-dark" :
+                     app.Status == ApplicationStatus.Approved ? "bg-success" :
+                      "bg-danger")">
+                        @app.Status
+                    </span>
+                </td>
+
+
+                <td>
+                    @if (app.Status == ApplicationStatus.Pending)
+                    {
+                        <form asp-action="UpdateApplicationStatus" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@app.Id" />
+                            <input type="hidden" name="status" value="Approved" />
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        <form asp-action="UpdateApplicationStatus" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@app.Id" />
+                            <input type="hidden" name="status" value="Rejected" />
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <em>No actions available</em>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    setTimeout(function () {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alert) {
+            alert.classList.remove('show');
+            alert.style.display = 'none';
+        });
+    }, 5000);
+</script>

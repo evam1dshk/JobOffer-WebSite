@@ -1,4 +1,5 @@
 ﻿@model X.PagedList.IPagedList<JobListingSite.Data.Entities.Offer>
+@using JobListingSite.Data.Enums
 @using X.PagedList
 
 <h2>Manage Job Offers</h2>
@@ -55,6 +56,7 @@
             <th>Title</th>
             <th>Category</th>
             <th>Actions</th>
+            <th>Applications</th>
         </tr>
     </thead>
     <tbody>
@@ -64,9 +66,17 @@
                 <td>@job.Title</td>
                 <td>@job.Category?.Name</td>
                 <td>
+                    <span class="badge bg-primary">@job.JobApplications.Count()</span>
+                    <span class="badge bg-warning text-dark">
+                        Pending: @job.JobApplications.Count(a => a.Status == ApplicationStatus.Pending)
+                    </span>
+                </td>
+                <td>
                     <a asp-action="EditJob" asp-route-id="@job.OfferId" class="btn btn-warning">Edit</a>
 
                     <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@job.OfferId">Delete</button>
+
+                    <a asp-action="ViewApplications" asp-route-jobId="@job.OfferId" class="btn btn-info">View Applications</a>
 
                     <!-- Delete Confirmation Modal -->
                     <div class="modal fade" id="deleteModal-@job.OfferId" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

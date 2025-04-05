@@ -9,16 +9,24 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.9" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.9" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.35" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.35" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.35" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.35">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.18" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\JobListingSite.Data\JobListingSite.Data.csproj" />
     <ProjectReference Include="..\JobListingSite.Services\JobListingSite.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Identity\Data\" />
   </ItemGroup>
 
 </Project>

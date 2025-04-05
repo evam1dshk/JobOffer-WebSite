@@ -24,9 +24,11 @@ namespace JobListingSite.Web.Controllers
         public async Task<IActionResult> ManageJobs(string search, int page = 1)
         {
             var pageSize = 10;
+
             var query = _context.Offers
                                 .Include(o => o.Category)
                                 .Include(o => o.JobApplications)
+                                .ThenInclude(a => a.User) // include applicant info
                                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
@@ -34,18 +36,13 @@ namespace JobListingSite.Web.Controllers
                 query = query.Where(o => o.Title.Contains(search) || o.Category.Name.Contains(search));
             }
 
-            // Stats
-            ViewBag.TotalApplicationsCount = await _context.JobApplications.CountAsync();
-            ViewBag.PendingApplicationsCount = await _context.JobApplications
-                                                            .Where(a => a.Status == ApplicationStatus.Pending)
-                                                            .Where(a => a.Status == ApplicationStatus.Pending)
-                                                            .CountAsync();
-
             var jobOffers = await query.OrderBy(o => o.Title).ToPagedListAsync(page, pageSize);
 
             ViewBag.SearchQuery = search;
+
             return View(jobOffers);
         }
+
 
         // GET: Create job form
         public IActionResult CreateJob()
@@ -177,5 +174,79 @@ namespace JobListingSite.Web.Controllers
             TempData["SuccessMessage"] = "Job offer deleted successfully!";
             return RedirectToAction(nameof(ManageJobs));
         }
+
+        [HttpPost]
+        [Authorize(Roles = "HR")]
+        public async Task<IActionResult> ApproveApplication(int id)
+        {
+            var application = await _context.JobApplications.FindAsync(id);
+            if (application == null) return NotFound();
+
+            application.Status = ApplicationStatus.Approved;
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Application approved.";
+            return RedirectToAction(nameof(ViewApplications), new { offerId = application.OfferId });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "HR")]
+        public async Task<IActionResult> RejectApplication(int id)
+        {
+            var application = await _context.JobApplications.FindAsync(id);
+            if (application == null) return NotFound();
+
+            application.Status = ApplicationStatus.Rejected;
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Application rejected.";
+            return RedirectToAction(nameof(ViewApplications), new { offerId = application.OfferId });
+        }
+
+        [Authorize(Roles = "HR, Admin")]
+        public async Task<IActionResult> ViewApplications(int offerId)
+        {
+            var applications = await _context.JobApplications
+                .Include(a => a.User)
+                .Where(a => a.OfferId == offerId)
+                .ToListAsync();
+
+            ViewBag.OfferId = offerId;
+            return View(applications);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateApplicationStatus(int id, string status)
+        {
+            var application = await _context.JobApplications
+                .Include(a => a.User)
+                .Include(a => a.Offer)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (application == null)
+            {
+                TempData["ErrorMessage"] = "Application not found.";
+                return RedirectToAction(nameof(ManageJobs));
+            }
+
+            if (!Enum.TryParse(status, out ApplicationStatus parsedStatus))
+            {
+                TempData["ErrorMessage"] = "Invalid status.";
+                return RedirectToAction("ViewApplications", new { offerId = application.OfferId });
+            }
+
+            if (application.Status != ApplicationStatus.Pending)
+            {
+                TempData["WarningMessage"] = "This application has already been processed.";
+                return RedirectToAction("ViewApplications", new { offerId = application.OfferId });
+            }
+
+            application.Status = parsedStatus;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Application {(parsedStatus == ApplicationStatus.Approved ? "approved" : "rejected")} successfully.";
+            return RedirectToAction("ViewApplications", new { offerId = application.OfferId });
+        }
+
     }
 }
