@@ -16,6 +16,7 @@ namespace JobListingSite.Web.Data
         public DbSet<Offer> Offers { get; set; } = null!;
         public DbSet<Profile> Profiles { get; set; } = null!;
         public DbSet<JobApplication> JobApplications { get; set; } = null!;
+        public DbSet<CompanyProfile> CompanyProfiles { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +54,12 @@ namespace JobListingSite.Web.Data
                 .HasOne(ja => ja.Offer)
                 .WithMany(o => o.JobApplications)
                 .HasForeignKey(ja => ja.OfferId);
+
+            modelBuilder.Entity<User>()
+            .HasOne(u => u.CompanyProfile)
+            .WithOne(cp => cp.User)
+            .HasForeignKey<CompanyProfile>(cp => cp.UserId);
+
 
 
             base.OnModelCreating(modelBuilder);

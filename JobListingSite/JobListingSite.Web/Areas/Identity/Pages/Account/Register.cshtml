@@ -4,64 +4,252 @@
     ViewData["Title"] = "Register";
 }
 
-<h1>@ViewData["Title"]</h1>
+<!-- 🌈 STYLING & ANIMATIONS -->
+<style>
+    body {
+        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+        background-attachment: fixed;
+    }
 
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-floating">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
-                <label asp-for="Input.Email"></label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
-                <label asp-for="Input.Password"></label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
-                <label asp-for="Input.ConfirmPassword"></label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
-                        </p>
-                    </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
+    .card {
+        border-radius: 1rem;
+        animation: fadeInCard 0.8s ease forwards;
+    }
+
+    @@keyframes fadeInCard {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-section {
+        transition: all 0.4s ease;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out forwards;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .input-validation-error {
+        border-color: #dc3545 !important;
+        animation: shake 0.3s ease;
+    }
+
+    @@keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .progress-step {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+    }
+
+    .progress-step div {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        color: #6c757d;
+    }
+
+    .progress-step div.active {
+        color: #007bff;
+        font-weight: bold;
+    }
+
+    .progress-step div::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 10px;
+        height: 10px;
+        background: #007bff;
+        border-radius: 50%;
+        opacity: 0;
+    }
+
+    .progress-step div.active::after {
+        opacity: 1;
+    }
+
+    .industry-dropdown {
+        border-left: 4px solid #0d6efd;
+        background-color: #f8f9fa;
+        transition: border-color 0.3s ease;
+    }
+
+        .industry-dropdown:focus {
+            border-color: #6610f2;
+            box-shadow: 0 0 0 0.15rem rgba(102, 16, 242, 0.25);
+        }
+
+        .industry-dropdown option:first-child {
+            font-style: italic;
+            color: #6c757d;
+        }
+</style>
+
+<h1 class="text-center mb-4">@ViewData["Title"]</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <!-- ✨ STEPPER STYLE HEADER -->
+                <div class="progress-step mb-4">
+                    <div id="step-user" class="active">User Info</div>
+                    <div id="step-company">Company Info</div>
+                    <div>Account</div>
+                </div>
+
+                <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- 🔄 SPINNER -->
+                    <div id="spinner" class="text-center mb-3" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
-                    </form>
-                }
-            }
-        </section>
+                    </div>
+
+                    <!-- 👥 Role Selection -->
+                    <div class="form-group mb-4">
+                        <label class="form-label fw-semibold">Registering as:</label>
+                        <select id="registrationRole" class="form-select border-primary">
+                            <option value="">-- Select --</option>
+                            <option value="user">👤 Regular User</option>
+                            <option value="company">🏢 Company</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" asp-for="Input.IsCompany" id="isCompanyHidden" />
+
+                    <!-- 👤 User Fields -->
+                    <div id="userFields" class="fade-section mb-4" style="display: none;">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Name" class="form-control" />
+                            <label asp-for="Input.Name"></label>
+                            <span asp-validation-for="Input.Name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Company Fields -->
+                    <div id="companyFields" class="fade-section mb-4">
+
+                        <!-- Industry Dropdown moved to bottom & visible only for companies -->
+                        <div class="form-floating mb-3">
+                            <select asp-for="Input.CategoryId" asp-items="Model.Categories" class="form-select industry-dropdown">
+                                <option value="">🌐 Choose your Industry</option>
+                            </select>
+                            <label asp-for="Input.CategoryId">Industry</label>
+                            <span asp-validation-for="Input.CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Name" class="form-control" />
+                            <label asp-for="Input.Name">Founder Name</label>
+                            <span asp-validation-for="Input.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.CompanyName" class="form-control" />
+                            <label asp-for="Input.CompanyName"></label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.PhoneNumber" class="form-control" />
+                            <label asp-for="Input.PhoneNumber"></label>
+                        </div>
+                    </div>
+
+                    <!-- 📧 Common Fields -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" />
+                        <label asp-for="Input.Email"></label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
+                        <label asp-for="Input.Password"></label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                        <label asp-for="Input.ConfirmPassword"></label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">✨ Register</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
+<!-- ✅ Scripts -->
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const roleSelector = document.getElementById("registrationRole");
+            const userFields = document.getElementById("userFields");
+            const companyFields = document.getElementById("companyFields");
+            const isCompanyHidden = document.getElementById("isCompanyHidden");
+            const form = document.getElementById("registerForm");
+            const spinner = document.getElementById("spinner");
+
+            const stepUser = document.getElementById("step-user");
+            const stepCompany = document.getElementById("step-company");
+
+            function fadeToggle(el, show) {
+                el.style.display = show ? "block" : "none";
+                if (show) {
+                    el.classList.add("fade-in");
+                } else {
+                    el.classList.remove("fade-in");
+                }
+            }
+
+            function toggleFields() {
+                const selected = roleSelector.value;
+
+                stepUser.classList.remove("active");
+                stepCompany.classList.remove("active");
+
+                if (selected === "user") {
+                    fadeToggle(userFields, true);
+                    fadeToggle(companyFields, false);
+                    isCompanyHidden.value = false;
+                    stepUser.classList.add("active");
+                } else if (selected === "company") {
+                    fadeToggle(userFields, false);
+                    fadeToggle(companyFields, true);
+                    isCompanyHidden.value = true;
+                    stepCompany.classList.add("active");
+                } else {
+                    fadeToggle(userFields, false);
+                    fadeToggle(companyFields, false);
+                    isCompanyHidden.value = "";
+                }
+            }
+
+            form.addEventListener("submit", function () {
+                spinner.style.display = "block";
+            });
+
+            roleSelector.addEventListener("change", toggleFields);
+            toggleFields();
+        });
+    </script>
 }

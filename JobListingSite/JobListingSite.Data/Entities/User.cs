@@ -18,5 +18,7 @@ namespace JobListingSite.Data.Entities
         public Profile? Profile { get; set; }
         public ICollection<Offer> Offers { get; set; } = new List<Offer>();
         public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
+        public CompanyProfile? CompanyProfile { get; set; }
+
     }
 }
