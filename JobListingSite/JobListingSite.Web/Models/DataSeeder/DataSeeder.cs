@@ -1,10 +1,11 @@
 ﻿using JobListingSite.Data.Entities;
 using JobListingSite.Web.Data;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
-namespace JobListingSite.Web.Models.DataSeeder
+
+namespace JobListingSite.Web.Models.DataSedeer
 {
+
     public class DataSeeder
     {
         public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
@@ -23,81 +24,132 @@ namespace JobListingSite.Web.Models.DataSeeder
                 }
             }
 
-            // Seed Admin User
+            // ✅ Seed Admin User
             string adminEmail = "admin@gmail.com";
-            string adminPassword = "Admin@123";
-
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
                 var adminUser = new User
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    NormalizedEmail = adminEmail.ToUpper(),
-                    NormalizedUserName = adminEmail.ToUpper(),
                     EmailConfirmed = true,
                     Name = "Admin",
                     IsCompany = false,
                     IsApproved = true
                 };
 
-                var result = await userManager.CreateAsync(adminUser, adminPassword);
-                if (result.Succeeded)
+                if ((await userManager.CreateAsync(adminUser, "Admin@123")).Succeeded)
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
 
-                    var adminProfile = new Profile
+                    dbContext.Profiles.Add(new Profile
                     {
                         Bio = "Admin user",
                         UserId = adminUser.Id
-                    };
-                    dbContext.Profiles.Add(adminProfile);
+                    });
                     await dbContext.SaveChangesAsync();
                 }
             }
 
+            // ✅ Seed HR User
             string hrEmail = "hr@gmail.com";
-            string hrPassword = "HR@123";
-
             if (await userManager.FindByEmailAsync(hrEmail) == null)
             {
                 var hrUser = new User
                 {
                     UserName = hrEmail,
                     Email = hrEmail,
-                    NormalizedEmail = hrEmail.ToUpper(),
-                    NormalizedUserName = hrEmail.ToUpper(),
                     EmailConfirmed = true,
-                    Name = "HR User",
+                    Name = "HR",
                     IsCompany = false,
                     IsApproved = true
                 };
 
-                var hrResult = await userManager.CreateAsync(hrUser, hrPassword);
-
-                if (hrResult.Succeeded)
+                if ((await userManager.CreateAsync(hrUser, "HR@123")).Succeeded)
                 {
                     await userManager.AddToRoleAsync(hrUser, "HR");
 
-                    var hrProfile = new Profile
+                    dbContext.Profiles.Add(new Profile
                     {
-                        Bio = "HR Representative",
+                        Bio = "HR user",
                         UserId = hrUser.Id
-                    };
-                    dbContext.Profiles.Add(hrProfile);
+                    });
                     await dbContext.SaveChangesAsync();
                 }
             }
+
+            // ✅ Create Categories if missing
             if (!dbContext.Categories.Any())
             {
-                var defaultCategories = new List<Category>
-                    {
-                        new Category { Name = "Technology" },
-                        new Category { Name = "Business" },
-                        new Category { Name = "Marketing" }
-                    };
-                dbContext.Categories.AddRange(defaultCategories);
+                dbContext.Categories.AddRange(new[]
+                {
+                new Category { Name = "Technology" },
+                new Category { Name = "Business" },
+                new Category { Name = "Marketing" }
+            });
                 await dbContext.SaveChangesAsync();
+            }
+
+            // ✅ Seed Company User and Job Offers
+            string companyEmail = "company@gmail.com";
+            if (await userManager.FindByEmailAsync(companyEmail) == null)
+            {
+                var companyUser = new User
+                {
+                    UserName = companyEmail,
+                    Email = companyEmail,
+                    EmailConfirmed = true,
+                    Name = "GreenTech Inc.",
+                    IsCompany = true,
+                    IsApproved = true
+                };
+
+                if ((await userManager.CreateAsync(companyUser, "Company@123")).Succeeded)
+                {
+                    await userManager.AddToRoleAsync(companyUser, "Company");
+
+                    var profile = new CompanyProfile
+                    {
+                        UserId = companyUser.Id,
+                        CompanyName = "GreenTech Inc.",
+                        Industry = "Technology",
+                        Phone = "123-456-7890",
+                        ContactEmail = companyEmail,
+                        Description = "We build eco-friendly solutions."
+                    };
+
+                    dbContext.CompanyProfiles.Add(profile);
+                    await dbContext.SaveChangesAsync();
+
+                    var techCategory = dbContext.Categories.FirstOrDefault(c => c.Name == "Technology");
+
+                    if (techCategory != null)
+                    {
+                        dbContext.Offers.AddRange(new[]
+                        {
+                        new Offer
+                        {
+                            Title = "Frontend Developer",
+                            Description = "We are looking for a creative Frontend Developer.",
+                            Salary = 50000,
+                            CompanyId = companyUser.Id,
+                            CategoryId = techCategory.CategoryId,
+                            CreatedAt = DateTime.UtcNow
+                        },
+                        new Offer
+                        {
+                            Title = "Backend Developer",
+                            Description = "Join our team to work on scalable backend systems.",
+                            Salary = 55000,
+                            CompanyId = companyUser.Id,
+                            CategoryId = techCategory.CategoryId,
+                            CreatedAt = DateTime.UtcNow.AddDays(-2)
+                        }
+                    });
+
+                        await dbContext.SaveChangesAsync();
+                    }
+                }
             }
         }
     }

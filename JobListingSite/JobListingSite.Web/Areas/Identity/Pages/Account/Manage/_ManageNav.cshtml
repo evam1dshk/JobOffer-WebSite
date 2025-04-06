@@ -1,4 +1,6 @@
-﻿@inject SignInManager<IdentityUser> SignInManager
+﻿@using JobListingSite.Data.Entities
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }

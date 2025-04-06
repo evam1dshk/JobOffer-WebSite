@@ -20,71 +20,101 @@ namespace JobListingSite.Web.Controllers
             _context = context;
             _userManager = userManager;
         }
-
-        // Existing actions: Index, Details...
-        public IActionResult Browse(string searchTerm, int? categoryId)
+        [AllowAnonymous]
+        public IActionResult Browse(string searchTerm, int? categoryId, int page = 1)
         {
-            var offersQuery = _context.Offers
-                .Include(o => o.Category)
+            const int PageSize = 6;
+
+            var query = _context.Offers
                 .Include(o => o.Company)
                     .ThenInclude(c => c.CompanyProfile)
+                .Include(o => o.Category)
                 .AsQueryable();
 
+            // ✅ Filter only offers with valid companies
+            query = query.Where(o => o.Company != null && o.Company.CompanyProfile != null);
+
+            // ✅ Apply search filter
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var lowerTerm = searchTerm.ToLower();
-                offersQuery = offersQuery.Where(o =>
-                    o.Title.ToLower().Contains(lowerTerm) ||
-                    o.Description.ToLower().Contains(lowerTerm) ||
-                    o.Category.Name.ToLower().Contains(lowerTerm) ||
-                    o.Company.CompanyProfile.CompanyName.ToLower().Contains(lowerTerm)
-                );
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(o => o.Title.ToLower().Contains(searchTerm));
             }
 
-
+            // ✅ Apply category filter
             if (categoryId.HasValue)
             {
-                offersQuery = offersQuery.Where(o => o.CategoryId == categoryId.Value);
+                query = query.Where(o => o.CategoryId == categoryId);
             }
 
-            var offers = offersQuery
-                .Select(o => new OfferCardViewModel
+            var totalOffers = query.Count();
+
+            var offers = query
+                .OrderByDescending(o => o.CreatedAt)
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            var offerCards = offers.Select(o => new OfferCardViewModel
+            {
+                Id = o.OfferId,
+                Title = o.Title,
+                CompanyName = o.Company.CompanyProfile.CompanyName,
+                CategoryName = o.Category.Name,
+                CreatedAt = o.CreatedAt,
+                DescriptionSnippet = o.Description.Length > 100
+                    ? o.Description[..100] + "..."
+                    : o.Description,
+                ApplicantsCount = _context.JobApplications.Count(a => a.OfferId == o.OfferId),
+                CompanyUserId = o.CompanyId
+            }).ToList();
+
+            var categories = _context.Categories
+                .Select(c => new SelectListItem
                 {
-                    Id = o.OfferId,
-                    Title = o.Title,
-                    DescriptionSnippet = o.Description.Length > 100
-                        ? o.Description.Substring(0, 100) + "..."
-                        : o.Description,
-                    CompanyName = o.Company.CompanyProfile.CompanyName,
-                    CategoryName = o.Category.Name,
-                    CreatedAt = o.CreatedAt
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
                 })
                 .ToList();
 
             var model = new BrowseViewModel
             {
-                Offers = offers,
+                Offers = offerCards,
                 SearchTerm = searchTerm,
                 CategoryId = categoryId,
-                Categories = _context.Categories
-                    .Select(c => new SelectListItem { Value = c.CategoryId.ToString(), Text = c.Name })
-                    .ToList()
+                Categories = categories,
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(totalOffers / (double)PageSize)
             };
 
             return View(model);
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var job = _context.Offers
+            var job = await _context.Offers
                 .Include(o => o.Category)
-                .FirstOrDefault(o => o.OfferId == id);
+                .Include(o => o.Company)
+                    .ThenInclude(c => c.CompanyProfile)
+                .FirstOrDefaultAsync(o => o.OfferId == id);
 
             if (job == null)
                 return NotFound();
 
+            // Pass company flag via ViewData
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                ViewData["IsCompany"] = currentUser?.IsCompany ?? false;
+            }
+            else
+            {
+                ViewData["IsCompany"] = false;
+            }
+
             return View(job);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(int offerId)

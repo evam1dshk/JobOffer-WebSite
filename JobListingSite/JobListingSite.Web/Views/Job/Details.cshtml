@@ -1,43 +1,123 @@
 ﻿@model JobListingSite.Data.Entities.Offer
-
 @{
     ViewData["Title"] = "Job Details";
+    Layout = "_Layout";
 }
 
-<h2>@Model.Title</h2>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
-@if (TempData["WarningMessage"] != null)
-{
-    <div class="alert alert-warning">@TempData["WarningMessage"]</div>
-}
+<style>
+    .details-card {
+        background-color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        padding: 2.5rem;
+        max-width: 700px;
+        width: 100%;
+        animation: fadeInUp 0.6s ease;
+    }
 
-<div class="mb-3">
-    <strong>Category:</strong> @Model.Category?.Name
+    .job-header {
+        border-bottom: 1px solid #ccc;
+        margin-bottom: 1rem;
+    }
+
+    .job-title {
+        font-weight: 700;
+        font-size: 1.6rem;
+        color: #185a9d;
+    }
+
+    .job-meta {
+        font-style: italic;
+        color: #555;
+    }
+
+    .job-description {
+        margin-top: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .apply-btn, .back-btn, .company-btn {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        border: none;
+        color: white;
+        font-weight: 500;
+        padding: 10px 24px;
+        border-radius: 8px;
+        transition: 0.3s ease;
+        margin-right: 10px;
+    }
+
+        .apply-btn:hover,
+        .back-btn:hover,
+        .company-btn:hover {
+            background: linear-gradient(to right, #43cea2, #28a745);
+        }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .button-row {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="details-card mx-auto">
+        <div class="job-header">
+            <h2 class="job-title"><i class="fas fa-briefcase me-2"></i>@Model.Title</h2>
+            <p class="job-meta">
+                <i class="fas fa-building me-1"></i> @Model.Company?.CompanyProfile?.CompanyName |
+                <i class="fas fa-tag me-1"></i> @Model.Category?.Name |
+                <i class="fas fa-clock me-1"></i> Posted on @Model.CreatedAt.ToShortDateString()
+            </p>
+        </div>
+
+        <div class="job-description">
+            <h5><i class="fas fa-info-circle me-2"></i>Job Description</h5>
+            <p>@Model.Description</p>
+        </div>
+
+        <div class="button-row">
+            @if (User.Identity != null && User.Identity.IsAuthenticated && !(ViewData["IsCompany"] as bool? ?? false))
+            {
+                <form method="post" asp-action="Apply" asp-route-offerId="@Model.OfferId">
+                    <button type="submit" class="apply-btn">
+                        <i class="fas fa-paper-plane me-2"></i> Apply Now
+                    </button>
+                </form>
+            }
+            else if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-success">
+                    <i class="fas fa-sign-in-alt me-2"></i> Login to Apply
+                </a>
+            }
+
+            <a asp-action="Browse" class="back-btn">
+                <i class="fas fa-arrow-left me-2"></i> Back to Listings
+            </a>
+
+            @if (Model.Company?.CompanyProfile != null)
+            {
+                <a asp-controller="Company" asp-action="Profile" asp-route-id="@Model.Company.Id" class="company-btn">
+                    <i class="fas fa-building me-2"></i> View Company
+                </a>
+            }
+        </div>
+    </div>
 </div>
-<div class="mb-3">
-    <strong>Description:</strong>
-    <p>@Model.Description</p>
-</div>
-<div class="mb-3">
-    <strong>Salary:</strong> $@Model.Salary.ToString("F2")
-</div>
-
-@if (User.Identity.IsAuthenticated && !User.IsInRole("HR") && !User.IsInRole("Admin"))
-{
-    <form asp-controller="Job" asp-action="Apply" method="post">
-        <input type="hidden" name="offerId" value="@Model.OfferId" />
-        <button type="submit" class="btn btn-success">Apply</button>
-    </form>
-}
-else if (!User.Identity.IsAuthenticated)
-{
-    <p class="text-muted">Please <a asp-area="Identity" asp-page="/Account/Login">login</a> to apply.</p>
-}

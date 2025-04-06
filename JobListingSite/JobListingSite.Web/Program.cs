@@ -1,6 +1,6 @@
 using JobListingSite.Data.Entities;
 using JobListingSite.Web.Data;
-using JobListingSite.Web.Models.DataSeeder;
+using JobListingSite.Web.Models.DataSedeer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,98 +1,77 @@
-﻿@model JobListingSite.Web.Models.JobListing.BrowseViewModel
+﻿@using JobListingSite.Web.Models.JobListing
+@model JobListingSite.Web.Models.JobListing.BrowseViewModel
+
 @{
     ViewData["Title"] = "Browse Jobs";
 }
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
 <style>
     body {
         background: linear-gradient(135deg, #43cea2, #185a9d);
-        min-height: 100vh;
         font-family: 'Segoe UI', sans-serif;
-        padding: 30px 0;
     }
 
-    .search-bar {
-        background-color: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
-        margin-bottom: 2rem;
+    .search-bar, .job-card {
+        animation: fadeIn 0.6s ease;
     }
 
-    .card.job-card {
-        border: none;
-        border-left: 5px solid #28a745;
-        border-radius: 12px;
-        transition: 0.3s;
+    .job-card:hover {
+        transform: translateY(-4px);
+        transition: 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     }
 
-        .card.job-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-        }
-
-    .card-title {
-        font-weight: 600;
+    .badge-filter .btn {
+        margin: 0.2rem;
+        border-radius: 20px;
     }
 
-    .card-subtitle {
-        font-style: italic;
-        color: #555;
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .btn-outline-success {
-        border-color: #28a745;
-        color: #28a745;
-    }
-
-        .btn-outline-success:hover {
-            background-color: #28a745;
-            color: white;
-        }
-
-    input[type="text"]:focus,
-    select:focus {
-        box-shadow: 0 0 0 4px rgba(72, 239, 184, 0.3);
-        border-color: #28a745;
-    }
-
-    .alert-custom-green {
+    .alert-custom {
         background-color: #d4edda;
         color: #155724;
         border: 1px solid #c3e6cb;
+        animation: fadeIn 0.6s ease;
     }
 </style>
 
-<div class="container">
-    <h2 class="text-white text-center mb-4">Browse Job Listings</h2>
+<div class="container mt-4">
+    <h2 class="text-white text-center mb-4">🌿 Browse Job Listings</h2>
 
-    <!-- 🔍 Search + Category Filter -->
-    <form method="get" class="search-bar">
+    <!-- 💬 Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-custom text-center" id="tempAlert">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger text-center" id="tempAlert">@TempData["ErrorMessage"]</div>
+    }
+
+    <!-- 🔍 Search -->
+    <form method="get" class="search-bar bg-white p-4 rounded shadow-sm mb-4">
         <div class="row g-3">
-            <div class="col-md-6">
-                <input name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Search jobs..." />
+            <div class="col-md-7">
+                <input name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="🔍 Search by title..." />
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <select name="categoryId" class="form-select">
-                    <option value="">All Categories</option>
-                    @foreach (var category in Model.Categories)
+                    <option value="">📂 All Categories</option>
+                    @foreach (var cat in Model.Categories)
                     {
-                        if (Model.CategoryId?.ToString() == category.Value)
-                        {
-                            <option value="@category.Value" selected>@category.Text</option>
-                        }
-                        else
-                        {
-                            <option value="@category.Value">@category.Text</option>
-                        }
+                        <option value="@cat.Value" selected="@(Model.CategoryId?.ToString() == cat.Value)">
+                            @cat.Text
+                        </option>
                     }
                 </select>
             </div>
-
             <div class="col-md-2 d-grid">
-                <button type="submit" class="btn btn-success"><i class="fas fa-search me-1"></i> Search</button>
+                <button class="btn btn-success"><i class="fas fa-filter me-1"></i> Filter</button>
             </div>
         </div>
     </form>
@@ -103,41 +82,55 @@
         <div class="row row-cols-1 row-cols-md-2 g-4">
             @foreach (var offer in Model.Offers)
             {
-                <div class="col">
-                    <div class="card job-card p-3">
-                        <div class="card-body">
-                            <h5 class="card-title">@offer.Title</h5>
-                            <h6 class="card-subtitle mb-2">@offer.CompanyName - <small>@offer.CategoryName</small></h6>
-                            <p class="card-text">@offer.DescriptionSnippet</p>
+                <div class="card job-card">
+                    <div class="card-body">
+                        <h5 class="card-title">@offer.Title</h5>
+                        <h6 class="card-subtitle mb-2">
+                            <i class="fas fa-building me-1"></i> @offer.CompanyName |
+                            <i class="fas fa-tag me-1"></i> @offer.CategoryName
+                        </h6>
+                        <p class="card-text">@offer.DescriptionSnippet</p>
+                        <p class="small text-muted">
+                            <i class="fas fa-users me-1"></i> @offer.ApplicantsCount applicant(s) •
+                            <i class="far fa-clock me-1"></i> Posted @(DateTime.UtcNow - offer.CreatedAt).Days days ago
+                        </p>
+
+                        <div class="d-flex justify-content-between">
                             <a asp-action="Details" asp-route-id="@offer.Id" class="btn btn-outline-success btn-sm">
-                                View Details
+                                <i class="fas fa-eye me-1"></i> View Details
                             </a>
                         </div>
                     </div>
                 </div>
             }
         </div>
+
+        <!-- ⏩ Pagination -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                        <a class="page-link" href="?searchTerm=@Model.SearchTerm&categoryId=@Model.CategoryId&page=@i">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
     }
     else
     {
-        <div class="alert alert-custom-green text-center mt-4">
-            No job offers found. Try adjusting your filters!
+        <div class="text-center mt-5 text-white fw-semibold">
+            <i class="fas fa-search-minus fa-2x mb-3"></i>
+            <div>No job listings match your search criteria. Try something else 🌿</div>
         </div>
     }
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const alertBox = document.querySelector(".alert-custom-green");
-
-            if (alertBox) {
-                setTimeout(() => {
-                    alertBox.style.transition = "opacity 0.5s ease";
-                    alertBox.style.opacity = 0;
-                    setTimeout(() => alertBox.remove(), 500);
-                }, 4000);
-            }
-        });
+        setTimeout(() => {
+            const alert = document.getElementById("tempAlert");
+            if (alert) alert.style.display = 'none';
+        }, 4000);
     </script>
 }

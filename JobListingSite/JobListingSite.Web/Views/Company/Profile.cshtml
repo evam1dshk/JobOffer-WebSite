@@ -1,0 +1,112 @@
+﻿@model JobListingSite.Data.Entities.User
+
+@{
+    ViewData["Title"] = "Company Profile";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    .company-banner {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    .company-logo {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-top: -60px;
+        border: 5px solid white;
+        background: white;
+    }
+
+    .company-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        margin-top: 1rem;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #185a9d;
+    }
+
+    .social-icons a {
+        font-size: 1.5rem;
+        margin-right: 15px;
+        color: #28a745;
+    }
+
+    .back-btn {
+        margin-top: 1rem;
+        background: linear-gradient(to right, #28a745, #43cea2);
+        border: none;
+        color: white;
+        font-weight: 500;
+        padding: 10px 24px;
+        border-radius: 8px;
+        transition: 0.3s ease;
+    }
+
+    .back-btn:hover {
+        background: linear-gradient(to right, #43cea2, #28a745);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container mt-5">
+    @if (!string.IsNullOrEmpty(Model.CompanyProfile?.BannerImageUrl))
+    {
+        <img src="@Model.CompanyProfile.BannerImageUrl" class="company-banner" alt="Banner" />
+    }
+
+    <div class="company-card text-center">
+        @if (!string.IsNullOrEmpty(Model.CompanyProfile?.LogoUrl))
+        {
+            <img src="@Model.CompanyProfile.LogoUrl" class="company-logo" alt="Logo" />
+        }
+
+        <h2 class="mt-3">@Model.CompanyProfile?.CompanyName</h2>
+        <p class="text-muted">@Model.CompanyProfile?.Industry</p>
+
+        <p class="mt-3">@Model.CompanyProfile?.Description</p>
+
+        <div class="mt-4 text-start">
+            <p><span class="info-label">📍 Location:</span> @Model.CompanyProfile?.Location</p>
+            <p><span class="info-label">📅 Founded:</span> @(Model.CompanyProfile?.FoundedYear?.ToString("yyyy"))</p>
+            <p><span class="info-label">👥 Employees:</span> @Model.CompanyProfile?.NumberOfEmployees</p>
+            <p><span class="info-label">📧 Email:</span> @Model.CompanyProfile?.ContactEmail</p>
+            <p><span class="info-label">📞 Phone:</span> @Model.CompanyProfile?.Phone</p>
+            <p><span class="info-label">🌐 Website:</span> <a href="@Model.CompanyProfile?.CompanyWebsite" target="_blank">@Model.CompanyProfile?.CompanyWebsite</a></p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.CompanyProfile?.LinkedIn) || !string.IsNullOrEmpty(Model.CompanyProfile?.Twitter))
+        {
+            <div class="social-icons mt-3">
+                @if (!string.IsNullOrEmpty(Model.CompanyProfile?.LinkedIn))
+                {
+                    <a href="@Model.CompanyProfile.LinkedIn" target="_blank"><i class="fab fa-linkedin"></i></a>
+                }
+                @if (!string.IsNullOrEmpty(Model.CompanyProfile?.Twitter))
+                {
+                    <a href="@Model.CompanyProfile.Twitter" target="_blank"><i class="fab fa-twitter"></i></a>
+                }
+            </div>
+        }
+
+        <a asp-controller="Job" asp-action="Browse" class="back-btn mt-4">
+            <i class="fas fa-arrow-left me-2"></i> Back to Browse Jobs
+        </a>
+    </div>
+</div>
