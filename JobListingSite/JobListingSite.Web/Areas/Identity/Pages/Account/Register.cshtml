@@ -2,204 +2,212 @@
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // ✅ Ensures header/footer show
 }
 
-<!-- 🌈 STYLING & ANIMATIONS -->
-<style>
-    body {
-        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-        background-attachment: fixed;
-    }
-
-    .card {
-        border-radius: 1rem;
-        animation: fadeInCard 0.8s ease forwards;
-    }
-
-    @@keyframes fadeInCard {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .fade-section {
-        transition: all 0.4s ease;
-    }
-
-    .fade-in {
-        animation: fadeIn 0.5s ease-in-out forwards;
-    }
-
-    @@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .input-validation-error {
-        border-color: #dc3545 !important;
-        animation: shake 0.3s ease;
-    }
-
-    @@keyframes shake {
-        0% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        50% { transform: translateX(5px); }
-        75% { transform: translateX(-5px); }
-        100% { transform: translateX(0); }
-    }
-
-    .progress-step {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 2rem;
-        font-size: 0.9rem;
-    }
-
-    .progress-step div {
-        flex: 1;
-        text-align: center;
-        position: relative;
-        color: #6c757d;
-    }
-
-    .progress-step div.active {
-        color: #007bff;
-        font-weight: bold;
-    }
-
-    .progress-step div::after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 10px;
-        height: 10px;
-        background: #007bff;
-        border-radius: 50%;
-        opacity: 0;
-    }
-
-    .progress-step div.active::after {
-        opacity: 1;
-    }
-
-    .industry-dropdown {
-        border-left: 4px solid #0d6efd;
-        background-color: #f8f9fa;
-        transition: border-color 0.3s ease;
-    }
-
-        .industry-dropdown:focus {
-            border-color: #6610f2;
-            box-shadow: 0 0 0 0.15rem rgba(102, 16, 242, 0.25);
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        .industry-dropdown option:first-child {
-            font-style: italic;
-            color: #6c757d;
+        .auth-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.5s ease-in-out;
+            max-width: 500px;
+            margin: 3rem auto;
         }
-</style>
 
-<h1 class="text-center mb-4">@ViewData["Title"]</h1>
+        .form-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #28a745;
+            z-index: 3;
+        }
 
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <!-- ✨ STEPPER STYLE HEADER -->
-                <div class="progress-step mb-4">
-                    <div id="step-user" class="active">User Info</div>
-                    <div id="step-company">Company Info</div>
-                    <div>Account</div>
+        .form-floating input,
+        .form-floating select {
+            padding-left: 2.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #28a745, #218838);
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background: linear-gradient(to right, #218838, #28a745);
+            }
+
+        .progress-step {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+            .progress-step div {
+                flex: 1;
+                text-align: center;
+                color: #aaa;
+            }
+
+                .progress-step div.active {
+                    color: #28a745;
+                    font-weight: 600;
+                }
+
+        .fade-section {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .spinner-border {
+            display: none;
+        }
+
+        .loading .spinner-border {
+            display: inline-block;
+        }
+
+        .loading #registerSubmit {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+}
+
+    <h1 class="text-center text-white mt-4 mb-3">Create Account</h1>
+
+    <div class="auth-card">
+        <div class="progress-step mb-4">
+            <div id="step-user" class="active">User Info</div>
+            <div id="step-company">Company Info</div>
+            <div>Account</div>
+        </div>
+
+        <form method="post" id="registerForm" asp-route-returnUrl="@Model.ReturnUrl">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <!-- 🔄 Spinner -->
+            <div id="spinner" class="text-center mb-3">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <!-- 👥 Role selection -->
+            <div class="form-floating mb-3">
+                <select id="registrationRole" class="form-select">
+                    <option value="">-- Select Role --</option>
+                    <option value="user">👤 Regular User</option>
+                    <option value="company">🏢 Company</option>
+                </select>
+                <label>Registering as</label>
+            </div>
+
+            <input type="hidden" asp-for="Input.IsCompany" id="isCompanyHidden" />
+
+            <!-- 👤 User Fields -->
+            <div id="userFields" class="fade-section mb-3" style="display:none;">
+                <div class="form-floating position-relative mb-3">
+                    <i class="fas fa-user form-icon"></i>
+                    <input asp-for="Input.Name" class="form-control" />
+                    <label asp-for="Input.Name"></label>
+                    <span asp-validation-for="Input.Name" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 🏢 Company Fields -->
+            <div id="companyFields" class="fade-section mb-3" style="display:none;">
+
+                <!-- Industry ABOVE CompanyName -->
+                <div class="form-floating position-relative mb-3">
+                    <select asp-for="Input.CategoryId" asp-items="Model.Categories" class="form-select">
+                        <option value="">🌐 Choose Industry</option>
+                    </select>
+                    <label asp-for="Input.CategoryId">Industry</label>
+                    <span asp-validation-for="Input.CategoryId" class="text-danger"></span>
                 </div>
 
-                <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div class="form-floating position-relative mb-3">
+                    <i class="fas fa-building form-icon"></i>
+                    <input asp-for="Input.CompanyName" class="form-control" />
+                    <label asp-for="Input.CompanyName"></label>
+                </div>
 
-                    <!-- 🔄 SPINNER -->
-                    <div id="spinner" class="text-center mb-3" style="display: none;">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-
-                    <!-- 👥 Role Selection -->
-                    <div class="form-group mb-4">
-                        <label class="form-label fw-semibold">Registering as:</label>
-                        <select id="registrationRole" class="form-select border-primary">
-                            <option value="">-- Select --</option>
-                            <option value="user">👤 Regular User</option>
-                            <option value="company">🏢 Company</option>
-                        </select>
-                    </div>
-
-                    <input type="hidden" asp-for="Input.IsCompany" id="isCompanyHidden" />
-
-                    <!-- 👤 User Fields -->
-                    <div id="userFields" class="fade-section mb-4" style="display: none;">
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.Name" class="form-control" />
-                            <label asp-for="Input.Name"></label>
-                            <span asp-validation-for="Input.Name" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <!-- Company Fields -->
-                    <div id="companyFields" class="fade-section mb-4">
-
-                        <!-- Industry Dropdown moved to bottom & visible only for companies -->
-                        <div class="form-floating mb-3">
-                            <select asp-for="Input.CategoryId" asp-items="Model.Categories" class="form-select industry-dropdown">
-                                <option value="">🌐 Choose your Industry</option>
-                            </select>
-                            <label asp-for="Input.CategoryId">Industry</label>
-                            <span asp-validation-for="Input.CategoryId" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.Name" class="form-control" />
-                            <label asp-for="Input.Name">Founder Name</label>
-                            <span asp-validation-for="Input.Name" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.CompanyName" class="form-control" />
-                            <label asp-for="Input.CompanyName"></label>
-                        </div>
-
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.PhoneNumber" class="form-control" />
-                            <label asp-for="Input.PhoneNumber"></label>
-                        </div>
-                    </div>
-
-                    <!-- 📧 Common Fields -->
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.Email" class="form-control" autocomplete="username" />
-                        <label asp-for="Input.Email"></label>
-                        <span asp-validation-for="Input.Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
-                        <label asp-for="Input.Password"></label>
-                        <span asp-validation-for="Input.Password" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-4">
-                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
-                        <label asp-for="Input.ConfirmPassword"></label>
-                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">✨ Register</button>
-                </form>
+                <div class="form-floating position-relative mb-3">
+                    <i class="fas fa-phone form-icon"></i>
+                    <input asp-for="Input.PhoneNumber" class="form-control" />
+                    <label asp-for="Input.PhoneNumber"></label>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- ✅ Scripts -->
-@section Scripts {
+            <!-- 📧 Common Fields -->
+            <div class="form-floating position-relative mb-3">
+                <i class="fas fa-envelope form-icon"></i>
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" />
+                <label asp-for="Input.Email"></label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating position-relative mb-3">
+                <i class="fas fa-lock form-icon"></i>
+                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
+                <label asp-for="Input.Password"></label>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating position-relative mb-4">
+                <i class="fas fa-lock form-icon"></i>
+                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                <label asp-for="Input.ConfirmPassword"></label>
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <button id="registerSubmit" type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-user-plus me-2"></i> Register
+            </button>
+
+            <div class="text-center mt-3">
+                Already have an account? <a asp-page="./Login">Login</a>
+            </div>
+        </form>
+    </div>
+
+    @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://kit.fontawesome.com/a2e0e6f91e.js" crossorigin="anonymous"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const roleSelector = document.getElementById("registrationRole");
@@ -208,38 +216,27 @@
             const isCompanyHidden = document.getElementById("isCompanyHidden");
             const form = document.getElementById("registerForm");
             const spinner = document.getElementById("spinner");
-
             const stepUser = document.getElementById("step-user");
             const stepCompany = document.getElementById("step-company");
 
-            function fadeToggle(el, show) {
-                el.style.display = show ? "block" : "none";
-                if (show) {
-                    el.classList.add("fade-in");
-                } else {
-                    el.classList.remove("fade-in");
-                }
-            }
-
             function toggleFields() {
                 const selected = roleSelector.value;
-
                 stepUser.classList.remove("active");
                 stepCompany.classList.remove("active");
 
                 if (selected === "user") {
-                    fadeToggle(userFields, true);
-                    fadeToggle(companyFields, false);
+                    userFields.style.display = "block";
+                    companyFields.style.display = "none";
                     isCompanyHidden.value = false;
                     stepUser.classList.add("active");
                 } else if (selected === "company") {
-                    fadeToggle(userFields, false);
-                    fadeToggle(companyFields, true);
+                    userFields.style.display = "none";
+                    companyFields.style.display = "block";
                     isCompanyHidden.value = true;
                     stepCompany.classList.add("active");
                 } else {
-                    fadeToggle(userFields, false);
-                    fadeToggle(companyFields, false);
+                    userFields.style.display = "none";
+                    companyFields.style.display = "none";
                     isCompanyHidden.value = "";
                 }
             }

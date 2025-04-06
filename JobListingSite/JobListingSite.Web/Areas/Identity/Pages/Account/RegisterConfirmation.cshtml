@@ -1,23 +1,55 @@
 ﻿@page
 @model RegisterConfirmationModel
 @{
-    ViewData["Title"] = "Register confirmation";
+    ViewData["Title"] = "Confirm Registration";
 }
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Register Confirmation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-<h1>@ViewData["Title"]</h1>
-@{
-    if (@Model.DisplayConfirmAccountLink)
-    {
-<p>
-    This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-    Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
-</p>
-    }
-    else
-    {
-<p>
-        Please check your email to confirm your account.
-</p>
-    }
-}
+        .auth-card {
+            background-color: white;
+            padding: 2rem 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 460px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
 
+        h2 {
+            color: #2575fc;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <h2>📧 Confirm Your Email</h2>
+        <p>We’ve sent a confirmation link to <strong>@Model.Email</strong>.</p>
+        <p>Please check your inbox to activate your account.</p>
+        @if (Model.DisplayConfirmAccountLink)
+        {
+            <p><a href="@Model.EmailConfirmationUrl">Click here to confirm</a></p>
+        }
+        <a asp-page="./Login" class="btn btn-primary mt-3">Back to Login</a>
+    </div>
+    <div class="footer">© 2025 JobListingSite</div>
+</body>
+</html>

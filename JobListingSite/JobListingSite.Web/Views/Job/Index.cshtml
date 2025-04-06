@@ -16,6 +16,9 @@
                     <h6 class="card-subtitle mb-2 text-muted">@job.Category?.Name</h6>
                     <p class="card-text">@job.Description?.Substring(0, Math.Min(100, job.Description.Length))...</p>
                     <a asp-action="Details" asp-route-id="@job.OfferId" class="btn btn-primary">View Details</a>
+                    <a asp-controller="Job" asp-action="Browse" class="btn btn-success">
+                        <i class="fas fa-search"></i> Browse Jobs
+                    </a>
                 </div>
             </div>
         </div>

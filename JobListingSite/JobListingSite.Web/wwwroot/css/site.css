@@ -4163,6 +4163,20 @@ body.mobile-nav-active {
         background: #f9f9ff;
     }
 
+.card-title {
+    font-weight: 600;
+}
+
+.card-subtitle {
+    font-style: italic;
+}
+
+input[type="text"]:focus {
+    box-shadow: 0 0 0 4px rgba(72, 239, 184, 0.3);
+    border-color: #28a745;
+}
+
+
 /*
 ################
                End Blog Details  Page style

@@ -1,48 +1,136 @@
 ﻿@{
-    ViewData["Title"] = "Find Your Dream Job";
+    ViewData["Title"] = "Welcome";
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-<section class="banner-area relative" id="home">
-    <div class="overlay overlay-bg"></div>
-    <div class="container">
-        <div class="row fullscreen d-flex align-items-center justify-content-center">
-            <div class="banner-content col-lg-12">
-                <h1 class="text-white">
-                    <span>1500+</span> Jobs posted last week
-                </h1>
-                <p class="text-white">
-                    <span>Search by tags:</span> Technology, Business, Consulting, IT Company, Design, Development
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
+<style>
+    body {
+        background: linear-gradient(to bottom right, #43cea2, #185a9d);
+        color: #fff;
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-<div class="hero-section text-center text-white d-flex align-items-center justify-content-center">
-    <div class="container">
-        <h1 class="display-4">Find Your Dream Job</h1>
-        <p class="lead">Search from thousands of job listings across different industries.</p>
-        <form class="search-bar d-flex justify-content-center">
-            <input type="text" class="form-control form-control-lg w-50" placeholder="Job title, keyword, or company">
-            <button type="submit" class="btn btn-primary btn-lg ms-2">Search</button>
-        </form>
+    .hero {
+        padding: 100px 0;
+        text-align: center;
+        animation: fadeIn 0.6s ease;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        font-weight: 700;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        margin-top: 10px;
+        color: #e2f6f0;
+    }
+
+    .btn-green {
+        background: #28a745;
+        border: none;
+        color: white;
+        padding: 10px 25px;
+        font-size: 1.1rem;
+        border-radius: 50px;
+        transition: background 0.3s ease;
+    }
+
+    .btn-green:hover {
+        background: #218838;
+    }
+
+    .search-bar {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 10px;
+        background: white;
+        border-radius: 50px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+    }
+
+    .search-bar input {
+        border: none;
+        border-radius: 50px 0 0 50px;
+        padding: 10px 20px;
+        width: 100%;
+        outline: none;
+    }
+
+    .search-bar button {
+        border: none;
+        border-radius: 0 50px 50px 0;
+        padding: 0 20px;
+        background: #28a745;
+        color: white;
+    }
+
+    .featured-jobs {
+        padding: 60px 0;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .job-card {
+        background-color: white;
+        color: #333;
+        padding: 20px;
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .job-card:hover {
+        transform: translateY(-5px);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="hero">
+    <h1>🚀 Find Your Dream Job</h1>
+    <p>Explore thousands of job offers from top companies in tech, marketing, and more.</p>
+
+    <div class="search-bar mt-4">
+        <input type="text" placeholder="Search by title, category..." />
+        <button><i class="fas fa-search"></i></button>
     </div>
+
+    <a asp-controller="Job" asp-action="Browse" class="btn btn-green mt-3">
+        <i class="fas fa-briefcase"></i> Browse Jobs
+    </a>
 </div>
 
-<div class="container my-5">
-    <h2 class="text-center">Recent Job Listings</h2>
-    <div class="row">
+<!-- 🧩 Featured Job Listings -->
+<div class="featured-jobs container text-dark">
+    <h2 class="text-center mb-5">🔥 Featured Jobs</h2>
+    <div class="row g-4">
         <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Software Developer</h5>
-                    <p class="card-text">Company: TechCorp</p>
-                    <p class="text-muted">Location: Remote</p>
-                    <a href="#" class="btn btn-outline-primary">Apply Now</a>
-                </div>
+            <div class="job-card">
+                <h5><i class="fas fa-laptop-code me-2 text-primary"></i>Frontend Developer</h5>
+                <p>Join a cutting-edge startup building the next big thing.</p>
+                <a class="btn btn-sm btn-outline-primary" href="#">Apply Now</a>
             </div>
         </div>
-        <!-- Repeat similar cards -->
+        <div class="col-md-4">
+            <div class="job-card">
+                <h5><i class="fas fa-chart-line me-2 text-success"></i>Marketing Specialist</h5>
+                <p>Help grow brands with data-driven campaigns and innovation.</p>
+                <a class="btn btn-sm btn-outline-success" href="#">Apply Now</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="job-card">
+                <h5><i class="fas fa-database me-2 text-warning"></i>Data Analyst</h5>
+                <p>Analyze key metrics and support strategic decisions with insights.</p>
+                <a class="btn btn-sm btn-outline-warning" href="#">Apply Now</a>
+            </div>
+        </div>
     </div>
 </div>

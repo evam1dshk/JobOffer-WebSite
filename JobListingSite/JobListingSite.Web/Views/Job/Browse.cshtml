@@ -1,0 +1,143 @@
+﻿@model JobListingSite.Web.Models.JobListing.BrowseViewModel
+@{
+    ViewData["Title"] = "Browse Jobs";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        min-height: 100vh;
+        font-family: 'Segoe UI', sans-serif;
+        padding: 30px 0;
+    }
+
+    .search-bar {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+        margin-bottom: 2rem;
+    }
+
+    .card.job-card {
+        border: none;
+        border-left: 5px solid #28a745;
+        border-radius: 12px;
+        transition: 0.3s;
+    }
+
+        .card.job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+    .card-title {
+        font-weight: 600;
+    }
+
+    .card-subtitle {
+        font-style: italic;
+        color: #555;
+    }
+
+    .btn-outline-success {
+        border-color: #28a745;
+        color: #28a745;
+    }
+
+        .btn-outline-success:hover {
+            background-color: #28a745;
+            color: white;
+        }
+
+    input[type="text"]:focus,
+    select:focus {
+        box-shadow: 0 0 0 4px rgba(72, 239, 184, 0.3);
+        border-color: #28a745;
+    }
+
+    .alert-custom-green {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+</style>
+
+<div class="container">
+    <h2 class="text-white text-center mb-4">Browse Job Listings</h2>
+
+    <!-- 🔍 Search + Category Filter -->
+    <form method="get" class="search-bar">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <input name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Search jobs..." />
+            </div>
+            <div class="col-md-4">
+                <select name="categoryId" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach (var category in Model.Categories)
+                    {
+                        if (Model.CategoryId?.ToString() == category.Value)
+                        {
+                            <option value="@category.Value" selected>@category.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@category.Value">@category.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-success"><i class="fas fa-search me-1"></i> Search</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- 💼 Job Cards -->
+    @if (Model.Offers.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var offer in Model.Offers)
+            {
+                <div class="col">
+                    <div class="card job-card p-3">
+                        <div class="card-body">
+                            <h5 class="card-title">@offer.Title</h5>
+                            <h6 class="card-subtitle mb-2">@offer.CompanyName - <small>@offer.CategoryName</small></h6>
+                            <p class="card-text">@offer.DescriptionSnippet</p>
+                            <a asp-action="Details" asp-route-id="@offer.Id" class="btn btn-outline-success btn-sm">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-custom-green text-center mt-4">
+            No job offers found. Try adjusting your filters!
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const alertBox = document.querySelector(".alert-custom-green");
+
+            if (alertBox) {
+                setTimeout(() => {
+                    alertBox.style.transition = "opacity 0.5s ease";
+                    alertBox.style.opacity = 0;
+                    setTimeout(() => alertBox.remove(), 500);
+                }, 4000);
+            }
+        });
+    </script>
+}
