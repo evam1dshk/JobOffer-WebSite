@@ -10,6 +10,7 @@
         public string CompanyUserId { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public int ApplicantsCount { get; set; }
+        public string? LogoUrl { get; set; }
     }
 
 }

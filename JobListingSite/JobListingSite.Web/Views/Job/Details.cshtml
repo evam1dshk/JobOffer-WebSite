@@ -7,6 +7,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
 <style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+    
     .details-card {
         background-color: #fff;
         border-radius: 16px;
@@ -47,6 +52,7 @@
         border-radius: 8px;
         transition: 0.3s ease;
         margin-right: 10px;
+        text-decoration: none;
     }
 
         .apply-btn:hover,
@@ -70,13 +76,28 @@
     .button-row {
         display: flex;
         justify-content: center;
-        gap: 10px;
         flex-wrap: wrap;
+        gap: 10px;
         margin-top: 2rem;
     }
 </style>
 
 <div class="container py-5">
+
+    @* Alerts for Apply feedback *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning">@TempData["WarningMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
     <div class="details-card mx-auto">
         <div class="job-header">
             <h2 class="job-title"><i class="fas fa-briefcase me-2"></i>@Model.Title</h2>
@@ -95,27 +116,42 @@
         <div class="button-row">
             @if (User.Identity != null && User.Identity.IsAuthenticated && !(ViewData["IsCompany"] as bool? ?? false))
             {
-                <form method="post" asp-action="Apply" asp-route-offerId="@Model.OfferId">
+                <form method="post" asp-action="Apply" asp-route-offerId="@Model.OfferId" class="d-inline">
+                    @Html.AntiForgeryToken()
                     <button type="submit" class="apply-btn">
                         <i class="fas fa-paper-plane me-2"></i> Apply Now
                     </button>
                 </form>
             }
-            else if (User.Identity == null || !User.Identity.IsAuthenticated)
+            else if (!User.Identity?.IsAuthenticated ?? false)
             {
-                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-success">
-                    <i class="fas fa-sign-in-alt me-2"></i> Login to Apply
+                var returnUrl = Url.Action("Details", "Job", new { id = Model.OfferId });
+
+                <a asp-area="Identity" asp-page="/Account/Register" asp-route-returnUrl="@returnUrl" class="apply-btn">
+                    <i class="fas fa-user-plus me-2"></i> Register to Apply
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@returnUrl" class="apply-btn">
+                    <i class="fas fa-sign-in-alt me-2"></i> Login
                 </a>
             }
-
-            <a asp-action="Browse" class="back-btn">
-                <i class="fas fa-arrow-left me-2"></i> Back to Listings
-            </a>
 
             @if (Model.Company?.CompanyProfile != null)
             {
                 <a asp-controller="Company" asp-action="Profile" asp-route-id="@Model.Company.Id" class="company-btn">
                     <i class="fas fa-building me-2"></i> View Company
+                </a>
+            }
+
+            @if (User.IsInRole("Company"))
+            {
+                <a asp-controller="Company" asp-action="ManageJobs" class="back-btn">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Manage Jobs
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Job" asp-action="Browse" class="back-btn">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Listings
                 </a>
             }
         </div>

@@ -26,31 +26,20 @@ namespace JobListingSite.Web.Controllers
             const int PageSize = 6;
 
             var query = _context.Offers
-                .Include(o => o.Company)
-                    .ThenInclude(c => c.CompanyProfile)
+                .Include(o => o.Company).ThenInclude(c => c.CompanyProfile)
                 .Include(o => o.Category)
                 .AsQueryable();
 
-            // ✅ Filter only offers with valid companies
-            query = query.Where(o => o.Company != null && o.Company.CompanyProfile != null);
-
-            // ✅ Apply search filter
             if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                searchTerm = searchTerm.ToLower();
-                query = query.Where(o => o.Title.ToLower().Contains(searchTerm));
-            }
+                query = query.Where(o => o.Title.ToLower().Contains(searchTerm.ToLower()));
 
-            // ✅ Apply category filter
             if (categoryId.HasValue)
-            {
                 query = query.Where(o => o.CategoryId == categoryId);
-            }
 
             var totalOffers = query.Count();
 
             var offers = query
-                .OrderByDescending(o => o.CreatedAt)
+                .Where(o => o.Company != null && o.Company.CompanyProfile != null)
                 .Skip((page - 1) * PageSize)
                 .Take(PageSize)
                 .ToList();
@@ -60,22 +49,19 @@ namespace JobListingSite.Web.Controllers
                 Id = o.OfferId,
                 Title = o.Title,
                 CompanyName = o.Company.CompanyProfile.CompanyName,
+                LogoUrl = o.Company.CompanyProfile.LogoUrl,
                 CategoryName = o.Category.Name,
                 CreatedAt = o.CreatedAt,
-                DescriptionSnippet = o.Description.Length > 100
-                    ? o.Description[..100] + "..."
-                    : o.Description,
+                DescriptionSnippet = o.Description.Length > 100 ? o.Description[..100] + "..." : o.Description,
                 ApplicantsCount = _context.JobApplications.Count(a => a.OfferId == o.OfferId),
-                CompanyUserId = o.CompanyId
+                CompanyUserId = o.CompanyId!
             }).ToList();
 
-            var categories = _context.Categories
-                .Select(c => new SelectListItem
-                {
-                    Value = c.CategoryId.ToString(),
-                    Text = c.Name
-                })
-                .ToList();
+            var categories = _context.Categories.Select(c => new SelectListItem
+            {
+                Value = c.CategoryId.ToString(),
+                Text = c.Name
+            }).ToList();
 
             var model = new BrowseViewModel
             {
@@ -88,9 +74,8 @@ namespace JobListingSite.Web.Controllers
             };
 
             return View(model);
-        }
-
-        public async Task<IActionResult> Details(int id)
+    }
+        public async Task<IActionResult> Details(int id, string? returnTo)
         {
             var job = await _context.Offers
                 .Include(o => o.Category)
@@ -98,44 +83,34 @@ namespace JobListingSite.Web.Controllers
                     .ThenInclude(c => c.CompanyProfile)
                 .FirstOrDefaultAsync(o => o.OfferId == id);
 
-            if (job == null)
-                return NotFound();
+            if (job == null) return NotFound();
 
-            // Pass company flag via ViewData
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var currentUser = await _userManager.GetUserAsync(User);
-                ViewData["IsCompany"] = currentUser?.IsCompany ?? false;
-            }
-            else
-            {
-                ViewData["IsCompany"] = false;
-            }
+            ViewData["IsCompany"] = User.IsInRole("Company");
+            ViewData["ReturnTo"] = returnTo;
 
             return View(job);
         }
 
         [HttpPost]
+        [Authorize] // ✅ Only authenticated users can apply
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(int offerId)
         {
             var user = await _userManager.GetUserAsync(User);
 
-            // Check if the job offer exists
             var offer = await _context.Offers.FindAsync(offerId);
             if (offer == null)
             {
                 TempData["ErrorMessage"] = "Job offer not found.";
-                return RedirectToAction("Index");
+                return RedirectToAction("Browse");
             }
 
-            // Check if the user already applied
             var alreadyApplied = await _context.JobApplications
                 .AnyAsync(a => a.OfferId == offerId && a.UserId == user.Id);
 
             if (alreadyApplied)
             {
-                TempData["WarningMessage"] = "You have already applied for this job.";
+                TempData["WarningMessage"] = "You already applied for this job.";
                 return RedirectToAction("Details", new { id = offerId });
             }
 
@@ -149,7 +124,7 @@ namespace JobListingSite.Web.Controllers
             _context.JobApplications.Add(application);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Your application has been submitted!";
+            TempData["SuccessMessage"] = "Successfully applied!";
             return RedirectToAction("Details", new { id = offerId });
         }
     }

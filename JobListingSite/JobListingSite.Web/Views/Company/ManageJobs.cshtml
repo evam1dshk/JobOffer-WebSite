@@ -1,0 +1,114 @@
+﻿@model List<JobListingSite.Data.Entities.Offer>
+@{
+    ViewData["Title"] = "Manage Job Offers";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .job-card {
+        animation: fadeInUp 0.6s ease;
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+        .job-card h5 {
+            font-weight: 600;
+            color: #185a9d;
+        }
+
+    .btn-outline-green {
+        color: #28a745;
+        border-color: #28a745;
+    }
+
+        .btn-outline-green:hover {
+            background: linear-gradient(to right, #28a745, #43cea2);
+            color: white;
+            border: none;
+        }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .btn-gradient {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white !important;
+        font-weight: 500;
+        border: none;
+        border-radius: 8px;
+        transition: 0.3s ease;
+    }
+
+        .btn-gradient:hover {
+            background: linear-gradient(to right, #43cea2, #28a745);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+</style>
+
+<div class="container mt-5">
+    <h2 class="text-white text-center mb-4"><i class="fas fa-briefcase me-2"></i>Manage Your Job Listings</h2>
+
+    <div class="text-center mb-4">
+        <a asp-action="AddJob" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> Add New Job
+        </a>
+    </div>
+
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-white fw-semibold">
+            <i class="fas fa-frown fa-2x mb-3"></i>
+            <p>You haven’t posted any jobs yet.</p>
+            <a asp-action="AddJob" class="btn btn-light">
+                <i class="fas fa-plus me-1"></i> Post Your First Job
+            </a>
+        </div>
+    }
+    else
+    {
+        foreach (var job in Model)
+        {
+            <div class="job-card">
+                <h5>@job.Title</h5>
+                <p><i class="fas fa-tag me-1"></i> Category: @job.Category?.Name</p>
+                <p><i class="fas fa-calendar-alt me-1"></i> Posted on @job.CreatedAt.ToShortDateString()</p>
+
+                <div class="actions">
+                    <div class="actions">
+                        <a asp-action="EditJob" asp-route-id="@job.OfferId" class="btn btn-gradient btn-sm">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                        <form asp-action="DeleteJob" asp-route-id="@job.OfferId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-gradient btn-sm">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </button>
+                        </form>
+                        <a asp-controller="Job" asp-action="Details" asp-route-id="@job.OfferId" class="btn btn-gradient btn-sm">
+                            <i class="fas fa-eye me-1"></i> View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

@@ -115,7 +115,9 @@ namespace JobListingSite.Web.Models.DataSedeer
                         Industry = "Technology",
                         Phone = "123-456-7890",
                         ContactEmail = companyEmail,
-                        Description = "We build eco-friendly solutions."
+                        Description = "We build eco-friendly solutions.",
+                        LogoUrl = "/img/sample-logo.png", 
+                        BannerImageUrl = "/img/sample-banner.jpg" 
                     };
 
                     dbContext.CompanyProfiles.Add(profile);
