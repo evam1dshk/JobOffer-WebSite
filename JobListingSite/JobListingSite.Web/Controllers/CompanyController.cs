@@ -73,13 +73,10 @@ namespace JobListingSite.Web.Controllers
                 throw;
             }
         }
-
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Profile(string id)
+        public IActionResult Profile(string id, string? returnTo)
         {
-            TempData.Remove("SuccessMessage");
-
             if (string.IsNullOrEmpty(id))
                 return NotFound();
 
@@ -90,6 +87,7 @@ namespace JobListingSite.Web.Controllers
             if (company == null)
                 return NotFound();
 
+            ViewData["ReturnTo"] = returnTo;
             return View(company);
         }
 

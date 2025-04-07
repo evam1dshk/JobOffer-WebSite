@@ -122,16 +122,16 @@
 
         <!-- Back Button -->
         <div class="mt-4">
-            @if (User.IsInRole("Company"))
+            @if (!string.IsNullOrEmpty(ViewData["ReturnTo"]?.ToString()))
             {
-                <a asp-controller="Company" asp-action="ManageJobs" class="btn btn-back">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Manage Jobs
+                <a href="@ViewData["ReturnTo"]" class="btn btn-back">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Job Details
                 </a>
             }
             else
             {
                 <a asp-controller="Job" asp-action="Browse" class="btn btn-back">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Job Listings
+                    <i class="fas fa-arrow-left me-2"></i> Back to Listings
                 </a>
             }
         </div>

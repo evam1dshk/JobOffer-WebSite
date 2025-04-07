@@ -88,6 +88,21 @@ a, a:focus, a:hover {
     outline: 0;
 }
 
+.btn-back {
+    background: linear-gradient(to right, #28a745, #43cea2);
+    color: white !important;
+    font-weight: 500;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    transition: 0.3s ease;
+}
+
+    .btn-back:hover {
+        background: linear-gradient(to right, #43cea2, #28a745);
+    }
+
+
 .btn.active.focus,
 .btn.active:focus,
 .btn.focus,
@@ -4175,6 +4190,13 @@ input[type="text"]:focus {
     box-shadow: 0 0 0 4px rgba(72, 239, 184, 0.3);
     border-color: #28a745;
 }
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+    background: linear-gradient(to right, #28a745, #43cea2) !important;
+    color: white !important;
+}
+
 
 
 /*

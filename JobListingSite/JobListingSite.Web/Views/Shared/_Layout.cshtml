@@ -48,37 +48,57 @@
 
                         @if (SignInManager.IsSignedIn(User))
                         {
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li><a asp-controller="Admin" asp-action="Index">Admin Panel</a></li>
-                            }
-
-                            @if (User.IsInRole("HR"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="HR" asp-action="ManageJobs">Manage Jobs</a>
-                                </li>
-                            }
-
-                            @if (User.IsInRole("Company"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-success fw-semibold" asp-controller="Company" asp-action="ManageJobs">
-                                        <i class="fas fa-briefcase me-1"></i> Manage Jobs
-                                    </a>
-                                </li>
-                            }
-
-                            <li>
-                                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index">
-                                    Hello, @User.Identity?.Name!
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle fw-semibold text-success" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i> Hello, @User.Identity?.Name!
                                 </a>
-                            </li>
-                            <li>
-                                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" method="post">
-                                    <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
-                                    <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-                                </form>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    @* Company-specific options *@
+                                    @if (User.IsInRole("Company"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Company" asp-action="ManageJobs">
+                                                <i class="fas fa-briefcase me-2"></i> Manage Jobs
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Company" asp-action="ManageProfile">
+                                                <i class="fas fa-building me-2"></i> Manage Profile
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+
+                                    @* Universal Identity settings *@
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                            <i class="fas fa-cog me-2"></i> Account Settings
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Email">
+                                            <i class="fas fa-envelope me-2"></i> Change Email
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">
+                                            <i class="fas fa-key me-2"></i> Change Password
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/TwoFactorAuthentication">
+                                            <i class="fas fa-shield-alt me-2"></i> Two-Factor Auth
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </li>
                         }
                         else

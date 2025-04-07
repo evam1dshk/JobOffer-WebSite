@@ -1,25 +1,78 @@
 ﻿@page
-@model Disable2faModel
+@model PersonalDataModel
 @{
-    ViewData["Title"] = "Disable two-factor authentication (2FA)";
-    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+    ViewData["Title"] = "Personal Data";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-<partial name="_StatusMessage" for="StatusMessage" />
-<h3>@ViewData["Title"]</h3>
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-<div class="alert alert-warning" role="alert">
-    <p>
-        <strong>This action only disables 2FA.</strong>
-    </p>
-    <p>
-        Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key
-        used in an authenticator app you should <a asp-page="./ResetAuthenticator">reset your authenticator keys.</a>
-    </p>
-</div>
+    .card-style {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        animation: fadeIn 0.5s ease;
+    }
 
-<div>
-    <form method="post">
-        <button class="btn btn-danger" type="submit">Disable 2FA</button>
-    </form>
+    .btn-gradient {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        transition: 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(to right, #43cea2, #28a745);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container mt-5">
+    <h2 class="text-white fw-bold mb-4"><i class="fas fa-user-shield me-2"></i> Personal Data</h2>
+    <div class="row">
+        <!-- Left: Navigation -->
+        <div class="col-md-3">
+            <partial name="_ManageNav" />
+        </div>
+
+        <!-- Right: Content -->
+        <div class="col-md-9">
+            <div class="card-style">
+                <p>You can request a download of your personal data or permanently delete your account.</p>
+
+                <form asp-page="DownloadPersonalData" method="post" class="mb-3">
+                    <button class="btn btn-gradient w-100" type="submit">
+                        <i class="fas fa-download me-2"></i> Download My Data
+                    </button>
+                </form>
+
+                <form asp-page="DeletePersonalData" method="post">
+                    <button class="btn btn-gradient w-100" type="submit">
+                        <i class="fas fa-trash-alt me-2"></i> Delete My Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>

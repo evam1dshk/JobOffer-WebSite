@@ -1,5 +1,5 @@
 ﻿@{
-    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout !=  null)
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
     {
         Layout = parentLayout.ToString();
     }
@@ -9,17 +9,63 @@
     }
 }
 
-<h1>Manage your account</h1>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .manage-header {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-align: center;
+        animation: fadeIn 0.6s ease;
+    }
+
+    .manage-subtitle {
+        color: #f0f0f0;
+        font-size: 1.1rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .manage-content {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.5s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="manage-header"><i class="fas fa-cogs me-2"></i> Manage Your Account</h1>
+    <p class="manage-subtitle">Change your settings, security options, and personal details</p>
+
     <div class="row">
         <div class="col-md-3">
             <partial name="_ManageNav" />
         </div>
         <div class="col-md-9">
-            @RenderBody()
+            <div class="manage-content">
+                @RenderBody()
+            </div>
         </div>
     </div>
 </div>

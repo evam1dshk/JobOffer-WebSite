@@ -67,8 +67,11 @@
 <div class="container mt-5">
     <h2 class="text-white text-center mb-4"><i class="fas fa-briefcase me-2"></i>Manage Your Job Listings</h2>
 
-    <div class="text-center mb-4">
-        <a asp-action="AddJob" class="btn btn-success">
+    <div class="d-flex justify-content-between mb-4">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-gradient">
+            <i class="fas fa-arrow-left me-1"></i> Back
+        </a>
+        <a asp-action="AddJob" class="btn btn-gradient">
             <i class="fas fa-plus me-1"></i> Add New Job
         </a>
     </div>
@@ -79,7 +82,7 @@
         <div class="text-center text-white fw-semibold">
             <i class="fas fa-frown fa-2x mb-3"></i>
             <p>You haven’t posted any jobs yet.</p>
-            <a asp-action="AddJob" class="btn btn-light">
+            <a asp-action="AddJob" class="btn btn-gradient">
                 <i class="fas fa-plus me-1"></i> Post Your First Job
             </a>
         </div>

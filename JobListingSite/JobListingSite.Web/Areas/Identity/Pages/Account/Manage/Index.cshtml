@@ -5,23 +5,74 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-<h3>@ViewData["Title"]</h3>
-<partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        <form id="profile-form" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-floating">
-                <input asp-for="Username" class="form-control" disabled />
-                <label asp-for="Username" class="form-label"></label>
-            </div>
-            <div class="form-floating">
-                <input asp-for="Input.PhoneNumber" class="form-control" />
-                <label asp-for="Input.PhoneNumber" class="form-label"></label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-            </div>
-            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-        </form>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .email-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 600px;
+        margin: auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.5s ease;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        transition: 0.3s ease;
+    }
+
+        .btn-gradient:hover {
+            background: linear-gradient(to right, #43cea2, #28a745);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container mt-5">
+     <div class="email-card">
+    <h2 class="text-success mb-3"><i class="fas fa-user-circle me-2"></i> Profile</h2>
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <form id="profile-form" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="form-floating mb-3">
+            <input asp-for="Username" class="form-control" disabled />
+            <label asp-for="Username" class="form-label"></label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input asp-for="Input.PhoneNumber" class="form-control" />
+            <label asp-for="Input.PhoneNumber" class="form-label"></label>
+            <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+        </div>
+
+        <button id="update-profile-button" type="submit" class="btn btn-gradient w-100">
+            <i class="fas fa-save me-2"></i> Save
+        </button>
+    </form>
     </div>
 </div>
 

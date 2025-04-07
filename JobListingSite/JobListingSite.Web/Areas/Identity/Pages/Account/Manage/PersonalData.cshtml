@@ -5,23 +5,69 @@
     ViewData["ActivePage"] = ManageNavPages.PersonalData;
 }
 
-<h3>@ViewData["Title"]</h3>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-<div class="row">
-    <div class="col-md-6">
-        <p>Your account contains personal data that you have given us. This page allows you to download or delete that data.</p>
-        <p>
-            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
-        </p>
-        <form id="download-data" asp-page="DownloadPersonalData" method="post">
-            <button class="btn btn-primary" type="submit">Download</button>
-        </form>
-        <p>
-            <a id="delete" asp-page="DeletePersonalData" class="btn btn-danger">Delete</a>
-        </p>
+    .email-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 600px;
+        margin: auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.5s ease;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        transition: 0.3s ease;
+    }
+
+        .btn-gradient:hover {
+            background: linear-gradient(to right, #43cea2, #28a745);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+        <!-- Right: Main Content -->
+        <div class="col-md-9">
+            <div class="email-card">
+                <h2 class="mb-3 text-success"><i class="fas fa-user-shield me-2"></i> Personal Data</h2>
+                <p>You can request a download of your personal data or permanently delete your account.</p>
+
+                <form asp-page="DownloadPersonalData" method="post" class="mb-3">
+                    <button class="btn btn-gradient w-100" type="submit">
+                        <i class="fas fa-download me-2"></i> Download My Data
+                    </button>
+                </form>
+
+                <form asp-page="DeletePersonalData" method="post">
+                    <button class="btn btn-gradient w-100" type="submit">
+                        <i class="fas fa-trash-alt me-2"></i> Delete My Account
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
