@@ -1,0 +1,238 @@
+﻿@model JobListingSite.Web.Models.LoggedUsers.LoggedUserProfileViewModel
+
+@{
+    ViewData["Title"] = "Manage Profile";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        max-width: 750px;
+        margin: 2rem auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        animation: fadeIn 0.5s ease;
+    }
+
+    .form-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #28a745;
+    }
+
+    .form-floating input,
+    .form-floating textarea {
+        padding-left: 2.5rem;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        transition: 0.3s ease;
+    }
+
+        .btn-gradient:hover {
+            background: linear-gradient(to right, #43cea2, #28a745);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #28a745;
+        margin-bottom: 1rem;
+        transition: 0.3s ease;
+    }
+
+    .toast-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: linear-gradient(to right, #43cea2, #28a745);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        animation: fadeSlide 0.3s ease;
+    }
+
+    .avatar-selection img:hover {
+        transform: scale(1.05);
+        cursor: pointer;
+    }
+
+    .avatar-option {
+        position: relative;
+    }
+
+    .avatar-check {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background-color: white;
+        color: #28a745;
+        border-radius: 50%;
+        padding: 3px;
+        font-size: 1.2rem;
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        z-index: 2;
+    }
+
+    .avatar-option input:checked + img {
+        border: 3px solid #28a745;
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    }
+
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeSlide {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="toast" class="toast-message">
+        <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+    </div>
+}
+
+<div class="profile-card">
+    <h3 class="text-success mb-4"><i class="fas fa-user-edit me-2"></i> Manage Your Profile</h3>
+
+    <div class="text-center">
+        <img src="@(Model.ProfileImageUrl ?? Model.SelectedAvatar ?? "/img/avatars/avatar1.png")"
+             class="profile-avatar"
+             alt="Profile Avatar" />
+    </div>
+
+    <form asp-action="ManageProfile" method="post" enctype="multipart/form-data">
+        <div class="form-floating position-relative mb-3">
+            <i class="fas fa-user form-icon"></i>
+            <input asp-for="Name" class="form-control" />
+            <label asp-for="Name"></label>
+        </div>
+
+        <div class="form-floating position-relative mb-3">
+            <i class="fas fa-phone form-icon"></i>
+            <input asp-for="Phone" class="form-control" />
+            <label asp-for="Phone"></label>
+        </div>
+
+        <div class="form-floating position-relative mb-3">
+            <i class="fas fa-map-marker-alt form-icon"></i>
+            <input asp-for="Location" class="form-control" />
+            <label asp-for="Location"></label>
+        </div>
+
+        <div class="form-floating position-relative mb-3">
+            <i class="fab fa-linkedin form-icon"></i>
+            <input asp-for="LinkedInUrl" class="form-control" />
+            <label asp-for="LinkedInUrl">LinkedIn URL</label>
+        </div>
+
+        <div class="form-floating position-relative mb-3">
+            <i class="fas fa-globe form-icon"></i>
+            <input asp-for="PortfolioUrl" class="form-control" />
+            <label asp-for="PortfolioUrl">Portfolio URL</label>
+        </div>
+
+        <div class="form-floating position-relative mb-3">
+            <i class="fas fa-info-circle form-icon"></i>
+            <textarea asp-for="Bio" class="form-control" style="height: 120px;"></textarea>
+            <label asp-for="Bio">Short Bio</label>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label"><i class="fas fa-user-circle me-1 text-success"></i> Choose a Default Avatar</label>
+            <div class="d-flex flex-wrap gap-3 justify-content-center avatar-selection">
+                @for (int i = 1; i <= 10; i++)
+                {
+                    var avatarPath = $"/img/avatars/avatar{i}.png";
+                    var isSelected = Model.SelectedAvatar == avatarPath;
+                    <label class="position-relative avatar-option">
+                        <input type="radio" name="SelectedAvatar" value="@avatarPath" class="d-none"
+                           @(isSelected ? "checked" : "") />
+                        <img src="@avatarPath"
+                         class="profile-avatar border @(isSelected ? "border-success shadow selected-avatar" : "border-light")" />
+                        @if (isSelected)
+                        {
+                            <span class="avatar-check"><i class="fas fa-check-circle"></i></span>
+                        }
+                    </label>
+                }
+            </div>
+        </div>
+
+
+        <div class="mb-3">
+            <label class="form-label"><i class="fas fa-upload me-1 text-success"></i> Or Upload Your Own Avatar</label>
+            <input type="file" asp-for="ProfileImage" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"><i class="fas fa-file-upload me-1 text-success"></i> Upload Resume (PDF)</label>
+            <input type="file" asp-for="Resume" class="form-control" />
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ResumeFilePath))
+        {
+            <div class="mb-3">
+                <a href="@Model.ResumeFilePath" class="btn btn-sm btn-outline-success" target="_blank">
+                    <i class="fas fa-file-pdf me-1"></i> View Resume
+                </a>
+            </div>
+        }
+
+        <button type="submit" class="btn btn-gradient w-100">
+            <i class="fas fa-save me-2"></i> Save Changes
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        setTimeout(() => {
+            const toast = document.getElementById("toast");
+            if (toast) {
+                toast.style.transition = "opacity 0.5s ease";
+                toast.style.opacity = "0";
+                setTimeout(() => toast.remove(), 500);
+            }
+        }, 5000);
+    </script>
+}

@@ -4,6 +4,7 @@ using JobListingSite.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobListingSite.Web.Data.Migrations
 {
     [DbContext(typeof(JobListingDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250407201402_ProfileAdditions")]
+    partial class ProfileAdditions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,9 +204,6 @@ namespace JobListingSite.Web.Data.Migrations
                     b.Property<string>("PortfolioUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProfileImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ResumeFilePath")
                         .HasColumnType("nvarchar(max)");
 
@@ -326,28 +325,28 @@ namespace JobListingSite.Web.Data.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "840bbf4d-615d-4c5f-b075-5e57e7e2704f",
+                            ConcurrencyStamp = "f9010cdc-3b1b-4fae-9eeb-e7ca4f18cf93",
                             Name = "Registered",
                             NormalizedName = "REGISTERED"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "5facc496-4dc0-4975-8232-8dd49e3b4405",
+                            ConcurrencyStamp = "d3318b55-37a2-4b77-845f-1cfa518516f9",
                             Name = "HR",
                             NormalizedName = "HR"
                         },
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "21f9759a-d0f4-477d-a9d3-62f8077b60a7",
+                            ConcurrencyStamp = "530e5f27-0c0a-42bd-bc01-894731a09d3b",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "4",
-                            ConcurrencyStamp = "26d05416-3df7-48fc-93a9-fffe2038ca6e",
+                            ConcurrencyStamp = "c953b2bf-889a-49a7-a58b-22ab8d0e5a24",
                             Name = "Company",
                             NormalizedName = "COMPANY"
                         });

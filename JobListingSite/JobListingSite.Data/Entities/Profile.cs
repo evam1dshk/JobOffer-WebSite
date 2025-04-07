@@ -10,13 +10,16 @@ namespace JobListingSite.Data.Entities
     public class Profile
     {
         public int ProfileId { get; set; }
-
-        [MaxLength(500)]
-        public string Bio { get; set; } = null!;
-
-        [Url]
+        public string? Bio { get; set; }
+        public string? Phone { get; set; }
+        public string? Location { get; set; }
         public string? LinkedInUrl { get; set; }
-        public string? UserId { get; set; }
-        public User User { get; set; } = null!;
+        public string? PortfolioUrl { get; set; }
+        public string? ResumeFilePath { get; set; }
+        public string? ProfileImageUrl { get; set; }
+
+        // Relationships
+        public string UserId { get; set; }
+        public User User { get; set; }
     }
 }

@@ -45,7 +45,6 @@
                         <li><a asp-controller="Pricing" asp-action="Index">Pricing</a></li>
                         <li><a asp-controller="Blog" asp-action="Index">Blog</a></li>
                         <li><a asp-controller="Contact" asp-action="Index">Contact</a></li>
-
                         @if (SignInManager.IsSignedIn(User))
                         {
                             <li class="nav-item dropdown">
@@ -53,46 +52,36 @@
                                     <i class="fas fa-user-circle me-1"></i> Hello, @User.Identity?.Name!
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    @* Company-specific options *@
+
+                                    @* Company dropdown options *@
                                     @if (User.IsInRole("Company"))
                                     {
-                                        <li>
-                                            <a class="dropdown-item" asp-controller="Company" asp-action="ManageJobs">
-                                                <i class="fas fa-briefcase me-2"></i> Manage Jobs
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" asp-controller="Company" asp-action="ManageProfile">
-                                                <i class="fas fa-building me-2"></i> Manage Profile
-                                            </a>
-                                        </li>
+                                        <li><a class="dropdown-item" asp-controller="Company" asp-action="ManageJobs"><i class="fas fa-briefcase me-2"></i> Manage Jobs</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Company" asp-action="ManageProfile"><i class="fas fa-building me-2"></i> Manage Profile</a></li>
                                         <li><hr class="dropdown-divider" /></li>
                                     }
 
-                                    @* Universal Identity settings *@
-                                    <li>
-                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
-                                            <i class="fas fa-cog me-2"></i> Account Settings
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Email">
-                                            <i class="fas fa-envelope me-2"></i> Change Email
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">
-                                            <i class="fas fa-key me-2"></i> Change Password
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/TwoFactorAuthentication">
-                                            <i class="fas fa-shield-alt me-2"></i> Two-Factor Auth
-                                        </a>
-                                    </li>
+                                    @{
+                                        var userId = UserManager.GetUserId(User);
+                                        var currentUser = await UserManager.FindByIdAsync(userId);
+                                        var isCompany = currentUser?.IsCompany ?? false;
+                                    }
+
+                                    @if (!isCompany)
+                                    {
+                                        <li><a class="dropdown-item" asp-controller="LoggedUser" asp-action="ManageProfile"><i class="fas fa-user-circle me-2"></i> Manage Profile</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Job" asp-action="MyApplications"><i class="fas fa-list me-2"></i> My Applications</a></li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+
+                                    @* Identity links for all *@
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-cog me-2"></i> Account Settings</a></li>
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Email"><i class="fas fa-envelope me-2"></i> Change Email</a></li>
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword"><i class="fas fa-key me-2"></i> Change Password</a></li>
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/TwoFactorAuthentication"><i class="fas fa-shield-alt me-2"></i> Two-Factor Auth</a></li>
                                     <li><hr class="dropdown-divider" /></li>
                                     <li>
-                                        <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                        <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
                                             <button type="submit" class="dropdown-item">
                                                 <i class="fas fa-sign-out-alt me-2"></i> Logout
                                             </button>

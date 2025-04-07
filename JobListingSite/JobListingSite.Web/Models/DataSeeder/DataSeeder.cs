@@ -153,6 +153,33 @@ namespace JobListingSite.Web.Models.DataSedeer
                     }
                 }
             }
+            // ✅ Seed Registered User
+            string registeredEmail = "testuser@gmail.com";
+            if (await userManager.FindByEmailAsync(registeredEmail) == null)
+            {
+                var registeredUser = new User
+                {
+                    UserName = registeredEmail,
+                    Email = registeredEmail,
+                    EmailConfirmed = true,
+                    Name = "Test User",
+                    IsCompany = false,
+                    IsApproved = true
+                };
+
+                if ((await userManager.CreateAsync(registeredUser, "Testuser@123")).Succeeded)
+                {
+                    await userManager.AddToRoleAsync(registeredUser, "Registered");
+
+                    dbContext.Profiles.Add(new Profile
+                    {
+                        Bio = "Registered user",
+                        UserId = registeredUser.Id
+                    });
+
+                    await dbContext.SaveChangesAsync();
+                }
+            }
         }
     }
 }
