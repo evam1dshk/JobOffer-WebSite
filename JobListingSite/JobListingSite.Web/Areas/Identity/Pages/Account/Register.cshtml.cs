@@ -145,17 +145,37 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    var companyProfile = new CompanyProfile
-                    {
-                        UserId = user.Id,
-                        CompanyName = Input.CompanyName,
-                        Industry = Input.Industry,
-                        Phone = Input.PhoneNumber,
-                    };
-
-
                     _logger.LogInformation("User created a new account with password.");
 
+                    // ✅ Assign Role
+                    string roleName = Input.IsCompany ? "Company" : "Registered";
+                    await _userManager.AddToRoleAsync(user, roleName);
+
+                    // ✅ Create CompanyProfile if Company
+                    if (Input.IsCompany)
+                    {
+                        var companyProfile = new CompanyProfile
+                        {
+                            UserId = user.Id,
+                            CompanyName = Input.CompanyName,
+                            Industry = Input.Industry,
+                            Phone = Input.PhoneNumber
+                        };
+                        _context.CompanyProfiles.Add(companyProfile);
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        // ✅ Create basic Profile for Registered users
+                        var profile = new Profile
+                        {
+                            UserId = user.Id
+                        };
+                        _context.Profiles.Add(profile);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    // ✅ Confirm email flow
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -185,9 +205,9 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
                 }
             }
 
-            // If we got this far, something failed, redisplay form
             return Page();
         }
+
 
         private IUserEmailStore<User> GetEmailStore()
         {

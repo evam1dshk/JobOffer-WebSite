@@ -13,17 +13,25 @@ namespace JobListingSite.Web.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly JobListingDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public LoggedUserController(UserManager<User> userManager, JobListingDbContext context)
+        public LoggedUserController(UserManager<User> userManager, JobListingDbContext context, IWebHostEnvironment env)
         {
             _userManager = userManager;
             _context = context;
+            _env = env;
         }
 
         public async Task<IActionResult> ManageProfile()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return NotFound();
+
+            if (user == null)
+                return NotFound();
+
+            // ✅ TEMP DEBUG: Print user and roles
+            var roles = await _userManager.GetRolesAsync(user);
+            Console.WriteLine($"[DEBUG] User: {user.Email}, Roles: {string.Join(", ", roles)}");
 
             var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
@@ -36,7 +44,8 @@ namespace JobListingSite.Web.Controllers
                 LinkedInUrl = profile?.LinkedInUrl,
                 PortfolioUrl = profile?.PortfolioUrl,
                 ResumeFilePath = profile?.ResumeFilePath,
-                ProfileImageUrl = profile?.ProfileImageUrl
+                ProfileImageUrl = profile?.ProfileImageUrl,
+                SelectedAvatar = profile?.SelectedAvatar
             };
 
             return View(model);
@@ -50,87 +59,82 @@ namespace JobListingSite.Web.Controllers
             if (user == null) return NotFound();
 
             var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
-
             if (profile == null)
             {
                 profile = new Profile { UserId = user.Id };
                 _context.Profiles.Add(profile);
             }
 
-            // ✅ Update user info
             user.Name = model.Name;
             user.PhoneNumber = model.Phone;
 
-            // ✅ Update profile info
             profile.Bio = model.Bio;
             profile.Location = model.Location;
             profile.LinkedInUrl = model.LinkedInUrl;
             profile.PortfolioUrl = model.PortfolioUrl;
+            profile.SelectedAvatar = model.SelectedAvatar;
 
-            // ✅ Handle resume upload
-            if (model.Resume != null && model.Resume.Length > 0)
-            {
-                var resumeFolder = Path.Combine("wwwroot", "uploads", "resumes");
-                Directory.CreateDirectory(resumeFolder);
-
-                var resumeFileName = Guid.NewGuid().ToString() + Path.GetExtension(model.Resume.FileName);
-                var resumePath = Path.Combine(resumeFolder, resumeFileName);
-
-                using (var stream = new FileStream(resumePath, FileMode.Create))
-                {
-                    await model.Resume.CopyToAsync(stream);
-                }
-
-                profile.ResumeFilePath = "/uploads/resumes/" + resumeFileName;
-            }
-
-            // ✅ Handle profile image upload
+            // ✅ Upload profile image
             if (model.ProfileImage != null && model.ProfileImage.Length > 0)
             {
-                var imageFolder = Path.Combine("wwwroot", "uploads", "profile-images");
-                Directory.CreateDirectory(imageFolder);
-
-                var imageFileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
-                var imagePath = Path.Combine(imageFolder, imageFileName);
-
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    await model.ProfileImage.CopyToAsync(stream);
-                }
-
-                profile.ProfileImageUrl = "/uploads/profile-images/" + imageFileName;
-            }
-
-            // If avatar is selected (from list), use it
-            if (!string.IsNullOrEmpty(model.SelectedAvatar))
-            {
-                profile.ProfileImageUrl = model.SelectedAvatar;
-            }
-
-            // If uploading a new file overrides selection
-            if (model.ProfileImage != null && model.ProfileImage.Length > 0)
-            {
-                var uploadsFolder = Path.Combine("wwwroot", "uploads", "avatars");
-                Directory.CreateDirectory(uploadsFolder);
-
-                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
+                var uploads = Path.Combine(_env.WebRootPath, "uploads", "profile-pictures");
+                Directory.CreateDirectory(uploads);
+                var fileName = Guid.NewGuid() + Path.GetExtension(model.ProfileImage.FileName);
+                var filePath = Path.Combine(uploads, fileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await model.ProfileImage.CopyToAsync(stream);
                 }
-
-                profile.ProfileImageUrl = "/uploads/avatars/" + uniqueFileName;
+                profile.ProfileImageUrl = "/uploads/profile-pictures/" + fileName;
             }
 
+            // ✅ Upload resume
+            if (model.Resume != null && model.Resume.Length > 0)
+            {
+                var uploads = Path.Combine(_env.WebRootPath, "uploads", "resumes");
+                Directory.CreateDirectory(uploads);
+                var fileName = Guid.NewGuid() + Path.GetExtension(model.Resume.FileName);
+                var filePath = Path.Combine(uploads, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.Resume.CopyToAsync(stream);
+                }
+                profile.ResumeFilePath = "/uploads/resumes/" + fileName;
+            }
 
-            // ✅ Save all
             await _userManager.UpdateAsync(user);
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Profile updated successfully!";
             return RedirectToAction("ManageProfile");
+        }
+
+        
+        public async Task<IActionResult> MyApplications()
+        {
+            var userId = _userManager.GetUserId(User); // ✅ Declare userId
+
+            var applications = await _context.JobApplications
+                .Where(a => a.UserId == userId)
+                .Include(a => a.Offer)
+                    .ThenInclude(o => o.Company)
+                        .ThenInclude(c => c.CompanyProfile)
+                .Include(a => a.User)
+                    .ThenInclude(u => u.Profile)
+                .ToListAsync();
+
+            var viewModel = applications.Select(a => new MyApplicationsViewModel
+            {
+                ApplicationId = a.Id,
+                JobTitle = a.Offer.Title,
+                CompanyName = a.Offer.Company.CompanyProfile.CompanyName,
+                AppliedOn = a.AppliedOn,
+                Status = a.Status,
+                ProfileImageUrl = a.User.Profile?.ProfileImageUrl,
+                SelectedAvatar = a.User.Profile?.SelectedAvatar
+            }).ToList();
+
+            return View(viewModel);
         }
     }
 }

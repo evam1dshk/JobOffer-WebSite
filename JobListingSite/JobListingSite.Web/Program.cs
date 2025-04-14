@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Amazon.S3;
 using Amazon;
 using Amazon.Runtime;
+using JobListingSite.Web.Models.Mail;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<JobListingDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+
 
 // ✅ Identity setup
 builder.Services.AddDefaultIdentity<User>(options =>
@@ -58,6 +63,12 @@ using (var scope = builder.Services.BuildServiceProvider().CreateScope())
     await DataSeeder.SeedRolesAndAdminAsync(services);
 }
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/AccessDenied"; // <- simpler path
+});
+
+
 // ✅ Middleware setup
 var app = builder.Build();
 
@@ -83,6 +94,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
-app.UseStatusCodePagesWithRedirects("/Account/AccessDenied");
 
 app.Run();

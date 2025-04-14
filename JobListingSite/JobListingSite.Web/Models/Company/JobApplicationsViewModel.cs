@@ -1,4 +1,5 @@
-﻿using JobListingSite.Data.Enums;
+﻿using JobListingSite.Data.Entities;
+using JobListingSite.Data.Enums;
 
 namespace JobListingSite.Web.Models.Company
 {

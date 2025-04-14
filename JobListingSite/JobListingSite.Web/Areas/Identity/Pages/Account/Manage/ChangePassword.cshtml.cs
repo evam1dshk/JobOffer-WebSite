@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using JobListingSite.Data.Entities;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace JobListingSite.Web.Areas.Identity.Pages.Account.Manage
 {
@@ -18,15 +19,18 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
+        private readonly IEmailSender _emailSender;
 
         public ChangePasswordModel(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            ILogger<ChangePasswordModel> logger)
+            ILogger<ChangePasswordModel> logger,
+            IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _emailSender = emailSender;
         }
 
         /// <summary>
@@ -103,26 +107,30 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account.Manage
             }
 
             var user = await _userManager.GetUserAsync(User);
+            var result = await _userManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
+
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
             var changePasswordResult = await _userManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
-            if (!changePasswordResult.Succeeded)
+
+            if (result.Succeeded)
             {
-                foreach (var error in changePasswordResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-                return Page();
+                var email = await _userManager.GetEmailAsync(user);
+                await _emailSender.SendEmailAsync(
+                    email,
+                    "Your password was changed",
+                    $"Hello,<br><br>Your password on <strong>JobListingSite</strong> was successfully changed.<br>If you did not make this change, please contact support immediately.<br><br>Thanks!"
+                );
+
+                _logger.LogInformation("User changed their password successfully.");
+                StatusMessage = "Your password has been changed.";
+                await _signInManager.RefreshSignInAsync(user);
+                return RedirectToPage();
             }
-
-            await _signInManager.RefreshSignInAsync(user);
-            _logger.LogInformation("User changed their password successfully.");
-            StatusMessage = "Your password has been changed.";
-
-            return RedirectToPage();
+            return Page();
         }
     }
 }

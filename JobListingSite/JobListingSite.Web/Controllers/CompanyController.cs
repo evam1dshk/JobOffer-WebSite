@@ -13,6 +13,7 @@ using Amazon.Runtime;
 using JobListingSite.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using JobListingSite.Data.Enums;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -24,14 +25,16 @@ namespace JobListingSite.Web.Controllers
         private readonly IWebHostEnvironment _hostEnvironment;
         private readonly IAmazonS3 _s3Client;
         private readonly IConfiguration _configuration;
+        private readonly IEmailSender _emailSender;
 
-        public CompanyController(JobListingDbContext context, UserManager<User> userManager, IWebHostEnvironment hostEnvironment, IAmazonS3 s3Client, IConfiguration configuration)
+        public CompanyController(JobListingDbContext context, UserManager<User> userManager, IWebHostEnvironment hostEnvironment, IAmazonS3 s3Client, IConfiguration configuration, IEmailSender emailSender)
         {
             _context = context;
             _userManager = userManager;
             _hostEnvironment = hostEnvironment;
             _s3Client = s3Client;
             _configuration = configuration;
+            _emailSender = emailSender;
         }
         private async Task<string> UploadFileToS3Async(IFormFile file, string folder)
         {
@@ -310,8 +313,9 @@ namespace JobListingSite.Web.Controllers
             TempData["SuccessMessage"] = "Job deleted successfully!";
             return RedirectToAction("ManageJobs");
         }
+
         [Authorize(Roles = "Company")]
-        public async Task<IActionResult> ViewApplications(int id)
+        public async Task<IActionResult> ViewApplications(int id, string? statusFilter)
         {
             var userId = _userManager.GetUserId(User);
 
@@ -323,70 +327,83 @@ namespace JobListingSite.Web.Controllers
             if (offer == null)
                 return NotFound();
 
-            return View(offer);
+            var applications = offer.JobApplications.AsQueryable();
+
+            if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<ApplicationStatus>(statusFilter, out var parsedStatus))
+            {
+                applications = applications.Where(a => a.Status == parsedStatus);
+            }
+
+            var viewModel = new JobApplicationsViewModel
+            {
+                OfferId = offer.OfferId,
+                OfferTitle = offer.Title,
+                Applications = applications.Select(a => new ApplicationViewModel
+                {
+                    Id = a.Id,
+                    ApplicantName = a.User.Name,
+                    ApplicantEmail = a.User.Email,
+                    AppliedOn = a.AppliedOn,
+                    Status = a.Status
+                }).ToList()
+            };
+
+            return View(viewModel);
         }
+
+
         [HttpPost]
         [Authorize(Roles = "Company")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveApplication(int applicationId)
         {
-            var application = await _context.JobApplications
-                .Include(a => a.Offer)
-                .FirstOrDefaultAsync(a => a.Id == applicationId && a.Offer.CompanyId == _userManager.GetUserId(User));
+            var userId = _userManager.GetUserId(User);
 
-            if (application == null)
+            var app = await _context.JobApplications
+                .Include(a => a.User)
+                .Include(a => a.Offer)
+                .FirstOrDefaultAsync(a => a.Id == applicationId && a.Offer.CompanyId == userId);
+
+            if (app == null || app.Status != ApplicationStatus.Pending)
                 return NotFound();
 
-            application.Status = ApplicationStatus.Approved;
+            app.Status = ApplicationStatus.Approved;
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Application approved!";
-            return RedirectToAction("ViewApplications", new { id = application.OfferId });
+            await _emailSender.SendEmailAsync(
+                app.User.Email,
+                $"Application Update for {app.Offer.Title}",
+                $"Your application for <strong>{app.Offer.Title}</strong> has been <span style='color:green;font-weight:bold'>APPROVED</span>.<br><br>Thank you for using JobListingSite!"
+            );
+
+            TempData["Success"] = "Application approved and email notification sent!";
+            return RedirectToAction("ViewApplications", new { id = app.OfferId }); // ✅ fixed
         }
 
         [HttpPost]
         [Authorize(Roles = "Company")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectApplication(int applicationId)
         {
-            var application = await _context.JobApplications
+            var userId = _userManager.GetUserId(User);
+
+            var app = await _context.JobApplications
+                .Include(a => a.User)
                 .Include(a => a.Offer)
-                .FirstOrDefaultAsync(a => a.Id == applicationId && a.Offer.CompanyId == _userManager.GetUserId(User));
+                .FirstOrDefaultAsync(a => a.Id == applicationId && a.Offer.CompanyId == userId);
 
-            if (application == null)
-                return NotFound();
+            if (app == null || app.Status != ApplicationStatus.Pending)
+                return Forbid();
 
-            application.Status = ApplicationStatus.Rejected;
+            app.Status = ApplicationStatus.Rejected;
             await _context.SaveChangesAsync();
 
-            TempData["WarningMessage"] = "Application rejected.";
-            return RedirectToAction("ViewApplications", new { id = application.OfferId });
+            await _emailSender.SendEmailAsync(
+                app.User.Email,
+                $"Application Update for {app.Offer.Title}",
+                $"Your application for <strong>{app.Offer.Title}</strong> has been <span style='color:red;font-weight:bold'>REJECTED</span>.<br><br>Thank you for using JobListingSite."
+            );
+
+            TempData["Warning"] = "Application rejected and email notification sent.";
+            return RedirectToAction("ViewApplications", new { id = app.OfferId }); // ✅ fixed
         }
-        [HttpPost]
-        [Authorize(Roles = "Company")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateApplicationStatus(int applicationId, string status)
-        {
-            var application = await _context.JobApplications
-                .Include(a => a.Offer)
-                .FirstOrDefaultAsync(a => a.Id == applicationId && a.Offer.CompanyId == _userManager.GetUserId(User));
-
-            if (application == null)
-                return NotFound();
-
-            if (Enum.TryParse(status, out ApplicationStatus parsedStatus))
-            {
-                application.Status = parsedStatus;
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Application marked as {parsedStatus}";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Invalid status update.";
-            }
-
-            return RedirectToAction("ManageApplications", new { offerId = application.OfferId });
-        }
-
     }
 }

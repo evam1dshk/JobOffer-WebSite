@@ -178,6 +178,8 @@ namespace JobListingSite.Web.Models.DataSedeer
                     });
 
                     await dbContext.SaveChangesAsync();
+                    var roles = await userManager.GetRolesAsync(registeredUser);
+                    Console.WriteLine($"✔ Seeded {registeredUser.Email} with roles: {string.Join(", ", roles)}");
                 }
             }
         }

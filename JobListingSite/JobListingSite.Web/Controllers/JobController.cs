@@ -128,32 +128,5 @@ namespace JobListingSite.Web.Controllers
             TempData["SuccessMessage"] = "Successfully applied!";
             return RedirectToAction("Details", new { id = offerId });
         }
-
-        [Authorize(Roles = "Registered")]
-        public async Task<IActionResult> MyApplications()
-        {
-            var userId = _userManager.GetUserId(User);
-
-            var applications = await _context.JobApplications
-      .Where(a => a.UserId == userId)
-      .Include(a => a.Offer)
-          .ThenInclude(o => o.Company)
-              .ThenInclude(c => c.CompanyProfile)
-      .ToListAsync();
-
-            var viewModel = applications.Select(a => new MyApplicationsViewModel
-            {
-                ApplicationId = a.Id,
-                JobTitle = a.Offer.Title,
-                CompanyName = a.Offer.Company.CompanyProfile != null
-                    ? a.Offer.Company.CompanyProfile.CompanyName
-                    : "Unknown Company",
-                AppliedOn = a.AppliedOn,
-                Status = a.Status
-            }).ToList();
-
-            return View(viewModel);
-        }
-
     }
 }
