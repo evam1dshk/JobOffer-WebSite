@@ -1,0 +1,149 @@
+﻿@model List<JobListingSite.Data.Entities.JobEditRequest>
+
+@{
+    ViewData["Title"] = "Edit Requests";
+    Layout = "_Layout";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .edit-requests-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        padding: 2.5rem;
+        margin-top: 40px;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    .edit-requests-title {
+        font-weight: bold;
+        font-size: 2rem;
+        color: #185a9d;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    thead {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+    }
+
+    th, td {
+        padding: 15px;
+        vertical-align: middle;
+    }
+
+    .btn-success {
+        background: linear-gradient(to right, #43cea2, #28a745);
+        border: none;
+    }
+
+    .btn-success:hover {
+        background: linear-gradient(to right, #28a745, #43cea2);
+    }
+
+    .no-requests {
+        text-align: center;
+        padding: 30px;
+        font-size: 1.3rem;
+        color: #555;
+        background: #f1f1f1;
+        border-radius: 12px;
+        margin-top: 30px;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="edit-requests-card mx-auto">
+
+        <h2 class="edit-requests-title"><i class="fas fa-edit me-2"></i> Edit Requests</h2>
+
+        @if (!Model.Any())
+        {
+            <div class="no-requests">
+                <i class="fas fa-info-circle me-2"></i> No edit requests found!
+            </div>
+        }
+        else
+        {
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Requested Changes</th>
+                        <th>Requested On</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+                            <td>@request.Offer?.Title</td>
+                            <td>@request.RequestedChanges</td>
+                            <td>@request.RequestedAt.ToString("g")</td>
+                            <td>
+                                <form asp-action="MarkRequestHandled" method="post" asp-route-requestId="@request.Id" class="d-inline request-form">
+                                    @Html.AntiForgeryToken()
+                                    <button type="button" class="btn btn-success btn-sm handle-request-btn">
+                                        <i class="fas fa-check-circle me-1"></i> Mark Handled
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const handleButtons = document.querySelectorAll('.handle-request-btn');
+
+        handleButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                const form = this.closest('form');
+
+                Swal.fire({
+                    title: 'Mark as Handled?',
+                    text: "This edit request will be removed!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Mark Handled'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>

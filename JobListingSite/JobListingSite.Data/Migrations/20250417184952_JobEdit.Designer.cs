@@ -4,6 +4,7 @@ using JobListingSite.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobListingSite.Web.Data.Migrations
 {
     [DbContext(typeof(JobListingDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250417184952_JobEdit")]
+    partial class JobEdit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -134,37 +136,6 @@ namespace JobListingSite.Web.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("JobApplications");
-                });
-
-            modelBuilder.Entity("JobListingSite.Data.Entities.JobEditRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("AdditionalComments")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("OfferId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RequestedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RequestedChanges")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OfferId");
-
-                    b.ToTable("JobEditRequests");
                 });
 
             modelBuilder.Entity("JobListingSite.Data.Entities.Offer", b =>
@@ -360,28 +331,28 @@ namespace JobListingSite.Web.Data.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "db03809d-b9da-400d-967b-a2d0738c27e8",
+                            ConcurrencyStamp = "05bef7a7-ab53-4767-8a86-aec5bc18c200",
                             Name = "Registered",
                             NormalizedName = "REGISTERED"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "4251ff00-f612-4653-b45f-901bbdc62e8f",
+                            ConcurrencyStamp = "e308ca55-c35f-466e-ac1c-eab351e01ab6",
                             Name = "HR",
                             NormalizedName = "HR"
                         },
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "a81f975a-2cf1-43f4-b2f8-306f0ef7a91a",
+                            ConcurrencyStamp = "83ce302b-e353-4d9f-b1f3-38e99851600e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "4",
-                            ConcurrencyStamp = "3952fbf3-4f57-4785-ab96-51ab460e1bd1",
+                            ConcurrencyStamp = "265e3d67-1ff8-4386-a692-d8e1f1ff5683",
                             Name = "Company",
                             NormalizedName = "COMPANY"
                         });
@@ -525,17 +496,6 @@ namespace JobListingSite.Web.Data.Migrations
                     b.Navigation("Offer");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("JobListingSite.Data.Entities.JobEditRequest", b =>
-                {
-                    b.HasOne("JobListingSite.Data.Entities.Offer", "Offer")
-                        .WithMany()
-                        .HasForeignKey("OfferId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Offer");
                 });
 
             modelBuilder.Entity("JobListingSite.Data.Entities.Offer", b =>

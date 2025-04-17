@@ -1,0 +1,51 @@
+﻿@model JobListingSite.Web.Models.HR.RequestEditViewModel
+@{
+    ViewData["Title"] = "Request Job Edit";
+}
+
+<div class="container my-5">
+    <div class="card shadow p-4">
+        <h2 class="text-success mb-4"><i class="bi bi-pencil-square me-2"></i> Request Edit for Job</h2>
+
+        <form asp-action="RequestEdit" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="OfferId" />
+
+            <div class="mb-3">
+                <label asp-for="JobTitle" class="form-label">Job Title</label>
+                <input asp-for="JobTitle" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="RequestedChanges" class="form-label">Requested Changes</label>
+                <textarea asp-for="RequestedChanges" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="RequestedChanges" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AdditionalComments" class="form-label">Additional Comments (Optional)</label>
+                <textarea asp-for="AdditionalComments" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Priority" class="form-label">Priority</label>
+                <select asp-for="Priority" class="form-select">
+                    <option value="Normal">Normal</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-send-plus me-2"></i> Submit Request
+            </button>
+            <a asp-action="Dashboard" class="btn btn-secondary ms-2">
+                <i class="bi bi-arrow-left me-2"></i> Cancel
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -16,6 +16,7 @@ using JobListingSite.Data.Enums;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using X.PagedList;
 using X.PagedList.Extensions;
+using System;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -38,7 +39,55 @@ namespace JobListingSite.Web.Controllers
             _configuration = configuration;
             _emailSender = emailSender;
         }
-        private async Task<string> UploadFileToS3Async(IFormFile file, string folder)
+
+        [Authorize(Roles = "Company")]
+        public async Task<IActionResult> ViewEditRequests()
+        {
+            var companyId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            var requests = await _context.JobEditRequests
+                .Include(r => r.Offer)
+                .Where(r => r.Offer.CompanyId == companyId)
+                .OrderByDescending(r => r.RequestedAt)
+                .ToListAsync();
+
+            return View(requests);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Company")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkRequestHandled(int requestId)
+        {
+            var request = await _context.JobEditRequests
+                .Include(r => r.Offer)
+                .ThenInclude(o => o.Company)
+                .ThenInclude(c => c.CompanyProfile)
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null)
+                return NotFound();
+
+            var companyEmail = request.Offer.Company?.CompanyProfile?.ContactEmail;
+            var offerTitle = request.Offer.Title;
+
+            _context.JobEditRequests.Remove(request);
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(companyEmail))
+            {
+                await _emailSender.SendEmailAsync(
+                    companyEmail,
+                    "Edit Request Handled",
+                    $"Your edit request for the job <strong>{offerTitle}</strong> has been processed."
+                );
+            }
+
+            TempData["SuccessMessage"] = "Edit request marked as handled successfully!";
+            return RedirectToAction("ViewEditRequests");
+        }
+
+    private async Task<string> UploadFileToS3Async(IFormFile file, string folder)
         {
             var bucketName = _configuration["AWS:BucketName"];
             var fileName = $"{folder}/{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";

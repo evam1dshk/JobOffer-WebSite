@@ -17,6 +17,8 @@ namespace JobListingSite.Web.Data
         public DbSet<Profile> Profiles { get; set; } = null!;
         public DbSet<JobApplication> JobApplications { get; set; } = null!;
         public DbSet<CompanyProfile> CompanyProfiles { get; set; } = null!;
+        public DbSet<JobEditRequest> JobEditRequests { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

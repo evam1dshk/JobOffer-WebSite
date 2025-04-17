@@ -24,6 +24,45 @@ namespace JobListingSite.Web.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> RequestEdit(int offerId)
+        {
+            var offer = await _context.Offers.FindAsync(offerId);
+            if (offer == null) return NotFound();
+
+            var model = new RequestEditViewModel
+            {
+                OfferId = offer.OfferId,
+                JobTitle = offer.Title
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RequestEdit(RequestEditViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var request = new JobEditRequest
+            {
+                OfferId = model.OfferId,
+                RequestedChanges = model.RequestedChanges,
+                AdditionalComments = model.AdditionalComments,
+                Priority = model.Priority
+            };
+
+            _context.JobEditRequests.Add(request);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Edit request submitted successfully!";
+            return RedirectToAction("Dashboard");
+        }
+
         public async Task<IActionResult> Dashboard(string search, int page = 1)
         {
             var pageSize = 10;

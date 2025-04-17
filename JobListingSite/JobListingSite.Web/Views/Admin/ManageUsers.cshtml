@@ -1,0 +1,34 @@
+﻿@model List<JobListingSite.Data.Entities.User>
+
+@{
+    ViewData["Title"] = "Manage Users";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <h2 class="text-success mb-4">Manage Users</h2>
+
+    <table class="table table-hover shadow-sm">
+        <thead class="table-success">
+            <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.Email</td>
+                    <td>@user.Name</td>
+                    <td>
+                        @(user.IsCompany ? "Company" : "Registered")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

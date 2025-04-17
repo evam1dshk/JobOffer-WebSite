@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row g-4">
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Users</h5>
+                    <p class="display-4">@ViewBag.TotalUsers</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Companies</h5>
+                    <p class="display-4">@ViewBag.TotalCompanies</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Jobs</h5>
+                    <p class="display-4">@ViewBag.TotalJobs</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm animate__animated animate__fadeInUp">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Categories</h5>
+                    <p class="display-4">@ViewBag.TotalCategories</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
