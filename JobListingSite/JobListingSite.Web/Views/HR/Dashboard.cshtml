@@ -1,0 +1,190 @@
+﻿@model JobListingSite.Web.Models.HR.HRDashboardViewModel
+@using JobListingSite.Data.Enums
+
+@{
+    ViewData["Title"] = "HR Dashboard";
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-left: 8px solid;
+        transition: all 0.3s ease;
+    }
+
+    .border-greenblue {
+        border-color: #43cea2;
+    }
+
+    .border-lightblue {
+        border-color: #00c6ff;
+    }
+
+    .border-orange {
+        border-color: #f7971e;
+    }
+
+    .border-coralred {
+        border-color: #f8576c;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-ombre {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+        border: none;
+        color: white;
+    }
+
+        .btn-ombre:hover {
+            background: linear-gradient(to right, #185a9d, #43cea2);
+            color: white;
+        }
+</style>
+
+<div class="card bg-white shadow-sm border-0 mb-5">
+    <div class="card-body p-4">
+        <h2 class="mb-3 text-success"><i class="bi bi-bar-chart-line-fill me-2 text-success"></i> HR Dashboard</h2>
+        <p class="text-muted mb-4">Quick overview of jobs and application status</p>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="stat-card border-greenblue">
+                    <h6 class="text-muted"><i class="bi bi-briefcase-fill me-2 text-success"></i>Total Jobs</h6>
+                    <h4 class="fw-bold text-dark counter" data-target="@Model.TotalJobs">0</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card border-lightblue">
+                    <h6 class="text-muted"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Total Applications</h6>
+                    <h4 class="fw-bold text-dark counter" data-target="@Model.TotalApplications">0</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card border-orange">
+                    <h6 class="text-muted"><i class="bi bi-hourglass-split me-2 text-warning"></i>Pending</h6>
+                    <h4 class="fw-bold text-dark counter" data-target="@Model.PendingApplications">0</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card border-coralred">
+                    <h6 class="text-muted"><i class="bi bi-x-circle-fill me-2 text-danger"></i>Rejected</h6>
+                    <h4 class="fw-bold text-dark counter" data-target="@Model.RejectedApplications">0</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <h4 class="mb-3">Recent Job Offers</h4>
+
+    <form method="get" asp-action="Dashboard" class="mb-3 d-flex">
+        <input type="text" name="search" class="form-control me-2" placeholder="Search jobs..."
+               value="@Model.SearchQuery" />
+        <button type="submit" class="btn btn-success">Search</button>
+        <a href="@Url.Action("Dashboard")" class="btn btn-outline-secondary ms-2">Clear</a>
+    </form>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Posted</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var offer in Model.RecentOffers)
+            {
+                <tr>
+                    <td>@offer.Title</td>
+                    <td>@offer.Category?.Name</td>
+                    <td>@offer.CreatedAt.ToShortDateString()</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a asp-action="EditJob" asp-route-id="@offer.OfferId" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-pencil-fill me-1"></i> Edit
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@offer.OfferId">
+                                <i class="bi bi-trash-fill me-1"></i> Delete
+                            </button>
+                            <a class="btn btn-sm btn-ombre" asp-action="ViewApplications" asp-route-offerId="@offer.OfferId">
+                                <i class="bi bi-people-fill me-1"></i> View Applications
+                            </a>
+                        </div>
+
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="deleteModal-@offer.OfferId" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirm Deletion</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to delete the job: <strong>@offer.Title</strong>?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <a asp-action="DeleteJob" asp-route-id="@offer.OfferId" class="btn btn-danger">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center mt-4">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Dashboard", new { page = i, search = Model.SearchQuery })">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+
+@section Scripts {
+    <script>
+        // Stat count animation
+        document.querySelectorAll('.counter').forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+
+                const increment = Math.ceil(target / 30);
+
+                if (count < target) {
+                    counter.innerText = count + increment;
+                    setTimeout(updateCount, 20);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+    </script>
+}

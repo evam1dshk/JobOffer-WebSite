@@ -5,13 +5,15 @@
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4/animate.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
     body {
         background: linear-gradient(135deg, #43cea2, #185a9d);
         font-family: 'Segoe UI', sans-serif;
     }
-    
+
     .details-card {
         background-color: #fff;
         border-radius: 16px;
@@ -83,21 +85,6 @@
 </style>
 
 <div class="container py-5">
-
-    @* Alerts for Apply feedback *@
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-    }
-    @if (TempData["WarningMessage"] != null)
-    {
-        <div class="alert alert-warning">@TempData["WarningMessage"]</div>
-    }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-    }
-
     <div class="details-card mx-auto">
         <div class="job-header">
             <h2 class="job-title"><i class="fas fa-briefcase me-2"></i>@Model.Title</h2>
@@ -116,10 +103,11 @@
         <div class="button-row">
             @if (User.Identity != null && User.Identity.IsAuthenticated && !(ViewData["IsCompany"] as bool? ?? false))
             {
-                <form method="post" asp-action="Apply" asp-route-offerId="@Model.OfferId" class="d-inline">
+                <form asp-action="Apply" asp-controller="Job" method="post" id="applyForm" class="d-inline">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="apply-btn">
-                        <i class="fas fa-paper-plane me-2"></i> Apply Now
+                    <input type="hidden" name="jobId" value="@Model.OfferId" />
+                    <button type="submit" id="applyButton" class="apply-btn">
+                        <i class="fas fa-paper-plane me-1"></i> Apply Now
                     </button>
                 </form>
             }
@@ -130,7 +118,7 @@
                 <a asp-area="Identity" asp-page="/Account/Register" asp-route-returnUrl="@returnUrl" class="company-btn">
                     <i class="fas fa-user-plus me-2"></i> Register to Apply
                 </a>
-              <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@returnUrl" class="company-btn">
+                <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@returnUrl" class="company-btn">
                     <i class="fas fa-sign-in-alt me-2"></i> Login
                 </a>
             }
@@ -142,18 +130,79 @@
                 </a>
             }
 
-            @if (User.IsInRole("Company"))
-            {
-                <a asp-controller="Company" asp-action="ManageJobs" class="back-btn">
-                    <i class="fas fa-arrow-left me-2"></i> Back to Manage Jobs
-                </a>
-            }
-            @if (!User.Identity?.IsAuthenticated ?? true || !(ViewData["IsCompany"] as bool? ?? false))
-            {
-                <a asp-controller="Job" asp-action="Browse" class="back-btn">
-                    <i class="fas fa-arrow-left me-2"></i> Back to Listings
-                </a>
-            }
+            <a asp-controller="Job" asp-action="Browse" class="back-btn">
+                <i class="fas fa-arrow-left me-2"></i> Back to Listings
+            </a>
         </div>
     </div>
 </div>
+
+<!-- ✅ SweetAlert and Button Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"] ?? ""));
+        const warningMessage = @Html.Raw(Json.Serialize(TempData["WarningMessage"] ?? ""));
+        const errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"] ?? ""));
+
+        if (successMessage.trim()) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: successMessage,
+                toast: true,
+                timer: 3000,
+                timerProgressBar: true,
+                position: 'top-end',
+                showConfirmButton: false
+            });
+        } else if (warningMessage.trim()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: warningMessage,
+                toast: true,
+                timer: 3000,
+                timerProgressBar: true,
+                position: 'top-end',
+                showConfirmButton: false
+            });
+        } else if (errorMessage.trim()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: errorMessage,
+                toast: true,
+                timer: 3000,
+                timerProgressBar: true,
+                position: 'top-end',
+                showConfirmButton: false
+            });
+        }
+
+        const applyForm = document.getElementById('applyForm');
+        const applyButton = document.getElementById('applyButton');
+
+        if (applyForm && applyButton) {
+            applyForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Confirm Apply?',
+                    text: "Do you want to apply for this job?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Apply!',
+                    backdrop: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        applyButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Applying...`;
+                        applyButton.disabled = true;
+                        applyForm.submit();
+                    }
+                });
+            });
+        }
+    });
+</script>

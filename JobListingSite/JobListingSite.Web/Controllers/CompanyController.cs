@@ -14,6 +14,8 @@ using JobListingSite.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using JobListingSite.Data.Enums;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -315,42 +317,44 @@ namespace JobListingSite.Web.Controllers
         }
 
         [Authorize(Roles = "Company")]
-        public async Task<IActionResult> ViewApplications(int id, string? statusFilter)
+        public async Task<IActionResult> ViewApplications(int id, string? statusFilter, int page = 1)
         {
             var userId = _userManager.GetUserId(User);
 
             var offer = await _context.Offers
                 .Include(o => o.JobApplications)
                     .ThenInclude(a => a.User)
+                        .ThenInclude(u => u.Profile) // ✅ Include profile info
                 .FirstOrDefaultAsync(o => o.OfferId == id && o.CompanyId == userId);
 
-            if (offer == null)
-                return NotFound();
+            if (offer == null) return NotFound();
 
-            var applications = offer.JobApplications.AsQueryable();
-
-            if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<ApplicationStatus>(statusFilter, out var parsedStatus))
-            {
-                applications = applications.Where(a => a.Status == parsedStatus);
-            }
+            var applications = offer.JobApplications
+                .Where(a => string.IsNullOrEmpty(statusFilter) || a.Status.ToString() == statusFilter)
+                .Select(a => new ApplicationViewModel
+                {
+                    Id = a.Id,
+                    ApplicantId = a.User.Id,
+                    ApplicantName = a.User.Name,
+                    ApplicantEmail = a.User.Email,
+                    AppliedOn = a.AppliedOn,
+                    Status = a.Status,
+                    ResumeFilePath = a.User.Profile?.ResumeFilePath,
+                    ProfilePictureUrl = a.User.Profile?.ProfileImageUrl ?? a.User.Profile?.SelectedAvatar
+                })
+                .OrderByDescending(a => a.AppliedOn)
+                .ToPagedList(page, 5); // ✅ 5 per page
 
             var viewModel = new JobApplicationsViewModel
             {
                 OfferId = offer.OfferId,
                 OfferTitle = offer.Title,
-                Applications = applications.Select(a => new ApplicationViewModel
-                {
-                    Id = a.Id,
-                    ApplicantName = a.User.Name,
-                    ApplicantEmail = a.User.Email,
-                    AppliedOn = a.AppliedOn,
-                    Status = a.Status
-                }).ToList()
+                Applications = applications.ToList(),
+                ApplicationsPaged = applications
             };
 
             return View(viewModel);
         }
-
 
         [HttpPost]
         [Authorize(Roles = "Company")]

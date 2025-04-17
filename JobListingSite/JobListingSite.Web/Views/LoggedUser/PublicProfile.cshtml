@@ -1,0 +1,111 @@
+﻿@model JobListingSite.Web.Models.LoggedUsers.PublicProfileViewModel
+@{
+    ViewData["Title"] = "Public Profile";
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .profile-card {
+        max-width: 700px;
+        margin: 3rem auto;
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        padding: 2rem;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .profile-img {
+        width: 140px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid #43cea2;
+        margin-bottom: 1rem;
+    }
+
+    .profile-header h2 {
+        font-weight: 700;
+        color: #185a9d;
+    }
+
+    .profile-header small {
+        color: #6c757d;
+    }
+
+    .profile-info strong {
+        color: #28a745;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+        font-weight: 500;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        transition: 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(to right, #43cea2, #28a745);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-1px);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="profile-card text-center">
+    @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+    {
+        <img src="@Model.ProfileImageUrl" class="profile-img" alt="Profile Picture" />
+    }
+
+    <div class="profile-header">
+        <h2>@Model.Name</h2>
+        <small>@Model.Email</small>
+    </div>
+
+    <div class="profile-info mt-4 text-start">
+        @if (!string.IsNullOrEmpty(Model.Bio))
+        {
+            <p><strong>Bio:</strong> @Model.Bio</p>
+        }
+        @if (!string.IsNullOrEmpty(Model.Location))
+        {
+            <p><strong>Location:</strong> @Model.Location</p>
+        }
+        @if (!string.IsNullOrEmpty(Model.Phone))
+        {
+            <p><strong>Phone:</strong> @Model.Phone</p>
+        }
+        @if (!string.IsNullOrEmpty(Model.LinkedInUrl))
+        {
+            <p><strong>LinkedIn:</strong> <a href="@Model.LinkedInUrl" target="_blank">@Model.LinkedInUrl</a></p>
+        }
+        @if (!string.IsNullOrEmpty(Model.PortfolioUrl))
+        {
+            <p><strong>Portfolio:</strong> <a href="@Model.PortfolioUrl" target="_blank">@Model.PortfolioUrl</a></p>
+        }
+        @if (!string.IsNullOrEmpty(Model.ResumeFilePath))
+        {
+            <p><strong>Resume:</strong> <a href="@Model.ResumeFilePath" class="btn btn-outline-green btn-sm" target="_blank">
+                <i class="bi bi-download"></i> Download
+            </a></p>
+        }
+    </div>
+
+    <div class="mt-4">
+        <a href="javascript:history.back()" class="btn btn-gradient">
+            <i class="bi bi-arrow-left-circle me-1"></i> Back
+        </a>
+    </div>
+</div>

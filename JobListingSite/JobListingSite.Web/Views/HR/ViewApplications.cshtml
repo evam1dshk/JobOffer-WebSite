@@ -1,115 +1,178 @@
-﻿@using JobListingSite.Data.Enums
-@model IEnumerable<JobApplication>
+﻿@model JobListingSite.Web.Models.Company.JobApplicationsViewModel
 
-<h2>Applications for Job</h2>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show shadow-sm animate__animated animate__fadeInDown" role="alert">
-        <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm animate__animated animate__fadeInDown" role="alert">
-        <i class="fas fa-times-circle me-2"></i> @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-@if (TempData["WarningMessage"] != null)
-{
-    <div class="alert alert-warning alert-dismissible fade show shadow-sm animate__animated animate__fadeInDown" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i> @TempData["WarningMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+@using JobListingSite.Data.Enums
+@using X.PagedList.Mvc.Core
+@{
+    ViewData["Title"] = "View Applications";
 }
 
-<a asp-action="ManageJobs" class="btn btn-secondary mb-3">
-    ← Back to Manage Jobs
-</a>
+<style>
+    .btn-ombre {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+        border: none;
+        color: white;
+    }
 
-
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
-@if (TempData["WarningMessage"] != null)
-{
-    <div class="alert alert-warning">@TempData["WarningMessage"]</div>
-}
-
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Applicant</th>
-            <th>Applied On</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-
-
-        @foreach (var app in Model)
-        {
-            <tr>
-                <td>@app.User.Name</td>
-                <td>@app.AppliedOn.ToShortDateString()</td>
-                <td>
-                    <span class="badge rounded-pill px-3
-                     @(app.Status == ApplicationStatus.Pending ? "bg-warning text-dark" :
-                      app.Status == ApplicationStatus.Approved ? "bg-success" : "bg-danger")">
-                        @app.Status
-                    </span>
-                </td>
-
-                <td>
-                    <span class="badge rounded-pill
-                     @(app.Status == ApplicationStatus.Pending ? "bg-warning text-dark" :
-                     app.Status == ApplicationStatus.Approved ? "bg-success" :
-                      "bg-danger")">
-                        @app.Status
-                    </span>
-                </td>
-
-
-                <td>
-                    @if (app.Status == ApplicationStatus.Pending)
-                    {
-                        <form asp-action="UpdateApplicationStatus" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@app.Id" />
-                            <input type="hidden" name="status" value="Approved" />
-                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                        </form>
-                        <form asp-action="UpdateApplicationStatus" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@app.Id" />
-                            <input type="hidden" name="status" value="Rejected" />
-                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                        </form>
-                    }
-                    else
-                    {
-                        <em>No actions available</em>
-                    }
-                </td>
-            </tr>
+        .btn-ombre:hover {
+            background: linear-gradient(to right, #185a9d, #43cea2);
+            color: white;
         }
-    </tbody>
-</table>
+
+    .profile-pic {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success">
+            <i class="bi bi-people-fill me-2"></i> Applications for @Model.OfferTitle
+        </h2>
+        @if (User.IsInRole("HR"))
+        {
+            <a asp-controller="HR" asp-action="Dashboard" class="btn btn-ombre" data-bs-toggle="tooltip" data-bs-placement="top" title="Back to HR Dashboard">
+                <i class="bi bi-arrow-left-circle me-1"></i> Back to Dashboard
+            </a>
+        }
+        else if (User.IsInRole("Company"))
+        {
+            <a asp-controller="Company" asp-action="CompanyManageJobs" class="btn btn-ombre" data-bs-toggle="tooltip" data-bs-placement="top" title="Back to Manage Jobs">
+                <i class="bi bi-arrow-left-circle me-1"></i> Back to Manage Jobs
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Back to Home">
+                <i class="bi bi-arrow-left-circle me-1"></i> Back to Home
+            </a>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success shadow-sm animate__animated animate__fadeInDown" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning shadow-sm animate__animated animate__fadeInDown" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["WarningMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger shadow-sm animate__animated animate__fadeInDown" role="alert">
+            <i class="bi bi-x-circle-fill me-2"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (Model.ApplicationsPaged != null && Model.ApplicationsPaged.Any())
+    {
+        <div class="card shadow-sm bg-white rounded p-4">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Applicant</th>
+                        <th>Email</th>
+                        <th>Applied</th>
+                        <th>Status</th>
+                        <th>Resume</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var app in Model.ApplicationsPaged)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    @if (!string.IsNullOrEmpty(app.ProfileImageUrl))
+                                    {
+                                        <img src="@app.ProfileImageUrl" class="profile-pic me-2" alt="Profile Picture" />
+                                    }
+                                    else
+                                    {
+                                        <img src="~/img/default-avatar.png" class="profile-pic me-2" alt="Default Avatar" />
+                                    }
+                                    @app.ApplicantName
+                                </div>
+                            </td>
+                            <td>@app.ApplicantEmail</td>
+                            <td>@app.TimeAgo</td>
+                            <td>
+                                <span class="badge rounded-pill
+                                    @(app.Status == ApplicationStatus.Pending ? "bg-warning text-dark" :
+                                      app.Status == ApplicationStatus.Approved ? "bg-success" :
+                                      "bg-danger")">
+                                    @app.Status
+                                </span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(app.ResumeFilePath))
+                                {
+                                    <a href="@app.ResumeFilePath" class="btn btn-sm btn-outline-success" target="_blank">
+                                        <i class="bi bi-file-earmark-arrow-down"></i> Download
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No Resume</span>
+                                }
+                            </td>
+                            <td>
+                                @if (app.Status == ApplicationStatus.Pending)
+                                {
+                                    <div class="d-flex gap-2">
+                                        <form asp-action="ApproveApplication" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@app.Id" />
+                                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                        </form>
+                                        <form asp-action="RejectApplication" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@app.Id" />
+                                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <em class="text-muted">No actions</em>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-center mt-4">
+                @Html.PagedListPager(Model.ApplicationsPaged, page => Url.Action("ViewApplications", new { jobId = Model.OfferId, page }))
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            No applications found for this job.
+        </div>
+    }
+</div>
 
 <script>
     setTimeout(function () {
-        var alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function (alert) {
-            alert.classList.remove('show');
-            alert.style.display = 'none';
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.classList.add('animate__animated', 'animate__fadeOutUp');
+            setTimeout(() => {
+                alert.remove();
+            }, 1000);
         });
     }, 5000);
+
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 </script>

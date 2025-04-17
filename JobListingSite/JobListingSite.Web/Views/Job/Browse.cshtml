@@ -53,15 +53,25 @@
 <div class="container mt-4">
     <h2 class="text-white text-center mb-4">🌿 Browse Job Listings</h2>
 
-    <!-- 💬 Alerts -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-custom text-center" id="tempAlert">@TempData["SuccessMessage"]</div>
+        <div class="alert alert-success shadow-sm animate__animated animate__fadeInDown" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning shadow-sm animate__animated animate__fadeInDown" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["WarningMessage"]
+        </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger text-center" id="tempAlert">@TempData["ErrorMessage"]</div>
+        <div class="alert alert-danger shadow-sm animate__animated animate__fadeInDown" role="alert">
+            <i class="bi bi-x-circle-fill me-2"></i> @TempData["ErrorMessage"]
+        </div>
     }
+
 
     <!-- 🔍 Search -->
     <form method="get" class="search-bar bg-white p-4 rounded shadow-sm mb-4">

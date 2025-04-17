@@ -7,6 +7,8 @@ using JobListingSite.Data.Entities;
 using JobListingSite.Web.Models.JobListing;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using JobListingSite.Web.Models.LoggedUsers;
+using JobListingSite.Data.Enums;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -15,11 +17,13 @@ namespace JobListingSite.Web.Controllers
     {
         private readonly JobListingDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IEmailSender _emailSender;
 
-        public JobController(JobListingDbContext context, UserManager<User> userManager)
+        public JobController(JobListingDbContext context, UserManager<User> userManager, IEmailSender emailSender)
         {
             _context = context;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
         [AllowAnonymous]
         public IActionResult Browse(string searchTerm, int? categoryId, int page = 1)
@@ -92,41 +96,53 @@ namespace JobListingSite.Web.Controllers
             return View(job);
         }
 
+        [Authorize(Roles = "Registered")]
         [HttpPost]
-        [Authorize] // ✅ Only authenticated users can apply
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Apply(int offerId)
+        public async Task<IActionResult> Apply(int jobId)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
-            var offer = await _context.Offers.FindAsync(offerId);
+            var existing = await _context.JobApplications
+                .FirstOrDefaultAsync(a => a.OfferId == jobId && a.UserId == userId);
+
+            if (existing != null)
+            {
+                TempData["WarningMessage"] = "You have already applied for this job!";
+                return RedirectToAction("Details", new { id = jobId });
+            }
+
+            var offer = await _context.Offers
+                .Include(o => o.Company)
+                .ThenInclude(c => c.CompanyProfile)
+                .FirstOrDefaultAsync(o => o.OfferId == jobId);
+
             if (offer == null)
-            {
-                TempData["ErrorMessage"] = "Job offer not found.";
-                return RedirectToAction("Browse");
-            }
-
-            var alreadyApplied = await _context.JobApplications
-                .AnyAsync(a => a.OfferId == offerId && a.UserId == user.Id);
-
-            if (alreadyApplied)
-            {
-                TempData["WarningMessage"] = "You already applied for this job.";
-                return RedirectToAction("Details", new { id = offerId });
-            }
+                return NotFound();
 
             var application = new JobApplication
             {
-                OfferId = offerId,
-                UserId = user.Id,
-                AppliedOn = DateTime.UtcNow
+                OfferId = jobId,
+                UserId = userId,
+                AppliedOn = DateTime.UtcNow,
+                Status = ApplicationStatus.Pending
             };
 
             _context.JobApplications.Add(application);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Successfully applied!";
-            return RedirectToAction("Details", new { id = offerId });
+            TempData["SuccessMessage"] = "Successfully applied for the job!";
+
+            if (!string.IsNullOrEmpty(offer.Company?.CompanyProfile?.ContactEmail))
+            {
+                await _emailSender.SendEmailAsync(
+                    offer.Company.CompanyProfile.ContactEmail,
+                    "New Job Application Received",
+                    $"A new application was received for your job offer: <strong>{offer.Title}</strong>."
+                );
+            }
+
+            return RedirectToAction("Details", new { id = jobId });
         }
     }
 }

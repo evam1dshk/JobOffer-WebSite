@@ -136,5 +136,32 @@ namespace JobListingSite.Web.Controllers
 
             return View(viewModel);
         }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> PublicProfile(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _context.Users
+                .Include(u => u.Profile)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null || user.Profile == null) return NotFound();
+
+            var vm = new PublicProfileViewModel
+            {
+                Name = user.Name,
+                Email = user.Email,
+                Location = user.Profile.Location,
+                Phone = user.Profile.Phone,
+                Bio = user.Profile.Bio,
+                LinkedInUrl = user.Profile.LinkedInUrl,
+                PortfolioUrl = user.Profile.PortfolioUrl,
+                ResumeFilePath = user.Profile.ResumeFilePath,
+                ProfileImageUrl = user.Profile.ProfileImageUrl ?? user.Profile.SelectedAvatar
+            };
+
+            return View(vm);
+        }
     }
 }
