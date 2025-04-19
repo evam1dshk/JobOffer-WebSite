@@ -5,35 +5,183 @@
     Layout = "_Layout";
 }
 
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-success">Manage Categories</h2>
-        <a asp-action="AddCategory" class="btn btn-success">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .manage-card {
+        background-color: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(24, 90, 157, 0.3);
+        padding: 3rem;
+        max-width: 1000px;
+        width: 100%;
+        margin: auto;
+        margin-top: 3rem;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #212529;
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .btn-black-ombre {
+        background: linear-gradient(to right, #434343, #000000);
+        border: none;
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        padding: 10px 24px;
+    }
+
+        .btn-black-ombre:hover {
+            color: #43cea2;
+            box-shadow: 0 0 15px rgba(24, 90, 157, 0.7);
+            transform: translateY(-3px); 
+        }
+
+        .btn-black-ombre:active {
+            transform: translateY(1px);
+        }
+
+    .btn-green-ombre, .btn-red-ombre {
+        border: none;
+        font-weight: 500;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-size: 0.9rem;
+        width: 120px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-green-ombre {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+        color: white;
+    }
+
+        .btn-green-ombre:hover {
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(67, 206, 162, 0.6);
+            transform: translateY(-3px);
+        }
+
+    .btn-red-ombre {
+        background: linear-gradient(to right, #ff416c, #ff4b2b);
+        color: white;
+    }
+
+        .btn-red-ombre:hover {
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 75, 43, 0.7);
+            transform: translateY(-3px);
+        }
+
+        .btn-green-ombre:active, .btn-red-ombre:active {
+            transform: translateY(1px);
+        }
+
+    table {
+        width: 100%;
+        margin-top: 2.5rem;
+        border-radius: 20px;
+        overflow: hidden;
+        background-color: #f1f3f5;
+    }
+
+    th {
+        background-color: #dee2e6;
+        color: #343a40;
+        font-weight: bold;
+        text-align: center;
+        vertical-align: middle;
+        padding: 15px;
+        font-size: 1.1rem;
+    }
+
+    td {
+        background-color: #f8f9fa;
+        text-align: center;
+        vertical-align: middle;
+        padding: 14px;
+        font-size: 1rem;
+    }
+
+    tbody tr:hover {
+        background-color: #e2e6ea;
+    }
+
+    .btn-group-custom {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 2rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="manage-card">
+    <h2><i class="fas fa-tags me-2"></i> Manage Categories</h2>
+
+    <div class="btn-group-custom">
+        <a asp-action="CreateCategory" class="btn btn-black-ombre">
             <i class="fas fa-plus-circle me-1"></i> Add New Category
+        </a>
+        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-black-ombre">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
         </a>
     </div>
 
-    <table class="table table-hover shadow-sm">
-        <thead class="table-success">
+    <table class="table table-bordered table-hover mt-4">
+        <thead>
             <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Actions</th>
+                <th>Category Name</th>
+                <th style="width: 200px;" class="text-center text-muted">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var category in Model)
             {
                 <tr>
-                    <td>@category.CategoryId</td>
                     <td>@category.Name</td>
-                    <td>
-                        <a asp-action="EditCategory" asp-route-id="@category.CategoryId" class="btn btn-outline-success btn-sm">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete(@category.CategoryId)">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <td class="text-center">
+                        <div class="action-buttons">
+                            <a asp-action="EditCategory" asp-route-id="@category.CategoryId" class="btn btn-green-ombre btn-sm">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                            <form asp-action="DeleteCategory" asp-route-id="@category.CategoryId" method="post" onsubmit="return confirmDelete(this);" class="d-inline delete-form">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-red-ombre btn-sm">
+                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             }
@@ -41,20 +189,27 @@
     </table>
 </div>
 
-<script>
-    function confirmDelete(id) {
-        Swal.fire({
-            title: 'Delete Category?',
-            text: 'This action cannot be undone.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = '/Admin/DeleteCategory/' + id;
-            }
-        });
-    }
-</script>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function confirmDelete(form) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This category will be permanently deleted!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff4b2b',
+                cancelButtonColor: '#43cea2',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+    </script>
+}

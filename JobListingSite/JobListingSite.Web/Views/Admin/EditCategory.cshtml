@@ -1,0 +1,154 @@
+﻿@model JobListingSite.Data.Entities.Category
+
+@{
+    ViewData["Title"] = "Edit Category";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .form-card {
+        background-color: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(24, 90, 157, 0.3);
+        padding: 3rem;
+        max-width: 600px;
+        width: 100%;
+        margin: auto;
+        margin-top: 4rem;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #212529;
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #555;
+    }
+
+    input.form-control {
+        border-radius: 12px;
+        padding: 10px 15px;
+        font-size: 1rem;
+        background-color: #f8f9fa;
+    }
+
+    .btn-black-ombre {
+        background: linear-gradient(to right, #434343, #000000);
+        border: none;
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        padding: 10px 24px;
+    }
+
+        .btn-black-ombre:hover {
+            color: #43cea2;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(24, 90, 157, 0.7);
+        }
+
+    .btn-green-ombre {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+        border: none;
+        color: white;
+        font-weight: 500;
+        border-radius: 8px;
+        padding: 10px 24px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-green-ombre:hover {
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(67, 206, 162, 0.7);
+        }
+
+    .button-row {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 2rem;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="form-card">
+    <h2><i class="fas fa-edit me-2"></i> Edit Category</h2>
+
+    <form asp-action="EditCategory" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="CategoryId" />
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="button-row">
+            <button type="submit" class="btn btn-green-ombre">
+                <i class="fas fa-save me-1"></i> Save Changes
+            </button>
+            <a asp-action="ManageCategories" class="btn btn-black-ombre">
+                <i class="fas fa-arrow-left me-1"></i> Back
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"] ?? ""));
+        const errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"] ?? ""));
+
+        if (successMessage && successMessage.trim() !== "") {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: successMessage,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+        else if (errorMessage && errorMessage.trim() !== "") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: errorMessage,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+    });
+</script>

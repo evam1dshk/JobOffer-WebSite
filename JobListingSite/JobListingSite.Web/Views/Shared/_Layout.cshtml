@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/bootstrap.css" />
-    <link rel="stylesheet" href="~/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="~/css/linearicons.css" />
     <link rel="stylesheet" href="~/css/magnific-popup.css" />
     <link rel="stylesheet" href="~/css/main.css" />
@@ -67,7 +67,7 @@
                                         <li><hr class="dropdown-divider" /></li>
                                     }
 
-                                    @if (isHR)
+                                    else if (isHR)
                                     {
                                         <li><a class="dropdown-item" asp-controller="HR" asp-action="Dashboard"><i class="fas fa-chart-line me-2"></i> HR Dashboard</a></li>
                                         <li><a class="dropdown-item" asp-controller="HR" asp-action="BrowseOffers"><i class="fas fa-briefcase me-2"></i> Browse Offers</a></li>
@@ -218,6 +218,45 @@
                             logoutForm.submit();
                         }
                     });
+                });
+            }
+
+            const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"] ?? ""));
+            const warningMessage = @Html.Raw(Json.Serialize(TempData["WarningMessage"] ?? ""));
+            const errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"] ?? ""));
+
+            if (successMessage && successMessage.trim() !== "") {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: successMessage,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            } else if (warningMessage && warningMessage.trim() !== "") {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Warning!',
+                    text: warningMessage,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            } else if (errorMessage && errorMessage.trim() !== "") {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: errorMessage,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
                 });
             }
         });
