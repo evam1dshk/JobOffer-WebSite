@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using X.PagedList;
 using X.PagedList.Extensions;
 using System;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -219,19 +220,18 @@ namespace JobListingSite.Web.Controllers
         }
 
         [Authorize(Roles = "Company")]
-        public async Task<IActionResult> ManageJobs()
+        public async Task<IActionResult> ManageJobs(int page = 1)
         {
             var userId = _userManager.GetUserId(User);
 
-            var jobs = await _context.Offers
-                .Where(o => o.CompanyId == userId)
-                .Include(o => o.Category)
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
-
+            var jobs = _context.Offers
+             .Where(o => o.CompanyId == userId)
+            .Include(o => o.Category)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToPagedList(page, 5);
             return View(jobs);
         }
-        // GET: Company/AddJob
+
         [HttpGet]
         [Authorize(Roles = "Company")]
         public IActionResult AddJob()
@@ -456,7 +456,7 @@ namespace JobListingSite.Web.Controllers
             );
 
             TempData["Warning"] = "Application rejected and email notification sent.";
-            return RedirectToAction("ViewApplications", new { id = app.OfferId }); // ✅ fixed
+            return RedirectToAction("ViewApplications", new { id = app.OfferId }); 
         }
     }
 }

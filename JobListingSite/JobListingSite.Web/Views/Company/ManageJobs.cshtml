@@ -1,4 +1,7 @@
-﻿@model List<JobListingSite.Data.Entities.Offer>
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<JobListingSite.Data.Entities.Offer>
+
 @{
     ViewData["Title"] = "Manage Job Offers";
 }
@@ -12,28 +15,97 @@
     }
 
     .job-card {
-        animation: fadeInUp 0.6s ease;
         background: white;
-        border-radius: 10px;
-        padding: 20px;
+        border-radius: 16px;
+        padding: 25px;
         margin-bottom: 20px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease;
     }
 
-        .job-card h5 {
-            font-weight: 600;
-            color: #185a9d;
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
         }
 
-    .btn-outline-green {
-        color: #28a745;
-        border-color: #28a745;
+    .btn-gradient, .btn-gradient-blue, .btn-gradient-red, .btn-gradient-teal, .btn-gradient-greenyellow {
+        border: none;
+        font-weight: 600;
+        padding: 8px 18px;
+        min-width: 140px;
+        min-height: 45px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+        text-align: center;
+        transition: all 0.3s ease;
     }
 
-        .btn-outline-green:hover {
-            background: linear-gradient(to right, #28a745, #43cea2);
+    .btn-gradient {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+    }
+
+    .btn-gradient-blue {
+        background: linear-gradient(to right, #36d1dc, #5b86e5);
+        color: white;
+    }
+
+    .btn-gradient-red {
+        background: linear-gradient(to right, #f8576c, #ff5858);
+        color: white;
+    }
+
+    .btn-gradient-teal {
+        background: linear-gradient(to right, #11998e, #38ef7d);
+        color: white;
+    }
+
+    .btn-gradient-greenyellow {
+        background: linear-gradient(to right, #00c9ff, #92fe9d);
+        color: #185a9d;
+    }
+
+        .btn-gradient:hover,
+        .btn-gradient-blue:hover,
+        .btn-gradient-red:hover,
+        .btn-gradient-teal:hover,
+        .btn-gradient-greenyellow:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+    .btn-back {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+        font-weight: 600;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+    }
+
+        .btn-back:hover {
+            background: linear-gradient(to right, #43cea2, #28a745);
             color: white;
-            border: none;
+            box-shadow: 0 8px 18px rgba(40, 167, 69, 0.6);
+            transform: translateY(-2px);
+        }
+
+    .title-card {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        animation: fadeInUp 0.6s ease;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+        .title-card h2 {
+            color: black;
+            font-weight: 700;
         }
 
     @@keyframes fadeInUp {
@@ -47,33 +119,13 @@
             transform: translateY(0);
         }
     }
-
-    .btn-gradient {
-        background: linear-gradient(to right, #28a745, #43cea2);
-        color: white !important;
-        font-weight: 500;
-        border: none;
-        border-radius: 8px;
-        transition: 0.3s ease;
-    }
-
-        .btn-gradient:hover {
-            background: linear-gradient(to right, #43cea2, #28a745);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
 </style>
 
-<div class="container mt-5">
-    <h2 class="text-white text-center mb-4"><i class="fas fa-briefcase me-2"></i>Manage Your Job Listings</h2>
-
-    <div class="d-flex justify-content-between mb-4">
-        <a asp-controller="Home" asp-action="Index" class="btn btn-gradient">
-            <i class="fas fa-arrow-left me-1"></i> Back
-        </a>
-        <a asp-action="AddJob" class="btn btn-gradient">
-            <i class="fas fa-plus me-1"></i> Add New Job
-        </a>
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2 class="text-white fw-bold" style="font-size: 2.5rem;">
+            <i class="fas fa-briefcase me-2"></i> Manage Your Job Listings
+        </h2>
     </div>
 
 
@@ -82,7 +134,7 @@
         <div class="text-center text-white fw-semibold">
             <i class="fas fa-frown fa-2x mb-3"></i>
             <p>You haven’t posted any jobs yet.</p>
-            <a asp-action="AddJob" class="btn btn-gradient">
+            <a asp-action="AddJob" class="btn btn-gradient mt-3">
                 <i class="fas fa-plus me-1"></i> Post Your First Job
             </a>
         </div>
@@ -96,25 +148,78 @@
                 <p><i class="fas fa-tag me-1"></i> Category: @job.Category?.Name</p>
                 <p><i class="fas fa-calendar-alt me-1"></i> Posted on @job.CreatedAt.ToShortDateString()</p>
 
-                <div class="actions">
-                    <div class="actions">
-                        <a asp-action="EditJob" asp-route-id="@job.OfferId" class="btn btn-gradient btn-sm">
-                            <i class="fas fa-edit me-1"></i> Edit
-                        </a>
-                        <form asp-action="DeleteJob" asp-route-id="@job.OfferId" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-gradient btn-sm">
+                <div class="d-flex justify-content-start align-items-center flex-wrap gap-2 mt-4">
+                    <a asp-action="EditJob" asp-route-id="@job.OfferId" class="btn btn-gradient-blue btn-sm shadow-sm">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+
+                    <a asp-controller="Job" asp-action="Details" asp-route-id="@job.OfferId" class="btn btn-gradient-teal btn-sm shadow-sm">
+                        <i class="fas fa-eye me-1"></i> View
+                    </a>
+
+                    <form asp-action="DeleteJob" asp-route-id="@job.OfferId" method="post" class="d-inline m-0">
+                        <div class="d-flex align-items-center">
+                            <button type="submit" class="btn btn-gradient-red btn-sm shadow-sm delete-btn">
                                 <i class="fas fa-trash-alt me-1"></i> Delete
                             </button>
-                        </form>
-                        <a asp-controller="Job" asp-action="Details" asp-route-id="@job.OfferId" class="btn btn-gradient btn-sm">
-                            <i class="fas fa-eye me-1"></i> View
-                        </a>
-                        <a asp-controller="Company" asp-action="ViewApplications" asp-route-id="@job.OfferId" class="btn btn-outline-success btn-sm">
-                            <i class="fas fa-eye"></i> View Applications
-                        </a>
-                    </div>
+                        </div>
+                    </form>
+
+                    <a asp-controller="Company" asp-action="ViewApplications" asp-route-id="@job.OfferId" class="btn btn-gradient-greenyellow btn-sm shadow-sm">
+                        <i class="fas fa-users me-1"></i> Applications
+                    </a>
                 </div>
             </div>
         }
     }
+
+    <div class="d-flex justify-content-between align-items-center mt-5 flex-wrap gap-3">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-back">
+            <i class="fas fa-arrow-left me-1"></i> Back
+        </a>
+
+        <a asp-action="AddJob" class="btn btn-gradient">
+            <i class="fas fa-plus me-1"></i> Add New Job
+        </a>
+
+        <div class="d-flex justify-content-center w-100 mt-4">
+            @Html.PagedListPager(Model, page => Url.Action("ManageJobs", new { page }),
+            new PagedListRenderOptions
+            {
+            UlElementClasses = new[] { "pagination" },
+            LiElementClasses = new[] { "page-item" },
+            PageClasses = new[] { "page-link" },
+            MaximumPageNumbersToDisplay = 5
+            })
+        </div>
+    </div>
+
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const form = btn.closest('form');
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#28a745',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!',
+                        backdrop: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+}
