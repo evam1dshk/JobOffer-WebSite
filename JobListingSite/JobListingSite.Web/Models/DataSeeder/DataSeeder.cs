@@ -24,7 +24,7 @@ namespace JobListingSite.Web.Models.DataSedeer
                 }
             }
 
-            // ✅ Seed Admin User
+            // Admin User
             string adminEmail = "admin@gmail.com";
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
@@ -35,8 +35,7 @@ namespace JobListingSite.Web.Models.DataSedeer
                     EmailConfirmed = true,
                     Name = "Admin",
                     IsCompany = false,
-                    IsApproved = true
-                };
+                    IsApproved = true,                };
 
                 if ((await userManager.CreateAsync(adminUser, "Admin@123")).Succeeded)
                 {
@@ -51,7 +50,7 @@ namespace JobListingSite.Web.Models.DataSedeer
                 }
             }
 
-            // ✅ Seed HR User
+            // HR User
             string hrEmail = "hr@gmail.com";
             if (await userManager.FindByEmailAsync(hrEmail) == null)
             {
@@ -62,8 +61,7 @@ namespace JobListingSite.Web.Models.DataSedeer
                     EmailConfirmed = true,
                     Name = "HR",
                     IsCompany = false,
-                    IsApproved = true
-                };
+                    IsApproved = true                };
 
                 if ((await userManager.CreateAsync(hrUser, "HR@123")).Succeeded)
                 {
@@ -78,19 +76,19 @@ namespace JobListingSite.Web.Models.DataSedeer
                 }
             }
 
-            // ✅ Create Categories if missing
+            // Create Categories
             if (!dbContext.Categories.Any())
             {
                 dbContext.Categories.AddRange(new[]
                 {
-                new Category { Name = "Technology" },
-                new Category { Name = "Business" },
-                new Category { Name = "Marketing" }
-            });
+                    new Category { Name = "Technology" },
+                    new Category { Name = "Business" },
+                    new Category { Name = "Marketing" }
+                });
                 await dbContext.SaveChangesAsync();
             }
 
-            // ✅ Seed Company User and Job Offers
+            // Company User
             string companyEmail = "company@gmail.com";
             if (await userManager.FindByEmailAsync(companyEmail) == null)
             {
@@ -101,14 +99,14 @@ namespace JobListingSite.Web.Models.DataSedeer
                     EmailConfirmed = true,
                     Name = "GreenTech Inc.",
                     IsCompany = true,
-                    IsApproved = true
+                    IsApproved = true,
                 };
 
                 if ((await userManager.CreateAsync(companyUser, "Company@123")).Succeeded)
                 {
                     await userManager.AddToRoleAsync(companyUser, "Company");
 
-                    var profile = new CompanyProfile
+                    dbContext.CompanyProfiles.Add(new CompanyProfile
                     {
                         UserId = companyUser.Id,
                         CompanyName = "GreenTech Inc.",
@@ -116,11 +114,9 @@ namespace JobListingSite.Web.Models.DataSedeer
                         Phone = "123-456-7890",
                         ContactEmail = companyEmail,
                         Description = "We build eco-friendly solutions.",
-                        LogoUrl = "/img/sample-logo.png", 
-                        BannerImageUrl = "/img/sample-banner.jpg" 
-                    };
-
-                    dbContext.CompanyProfiles.Add(profile);
+                        LogoUrl = "/img/sample-logo.png",
+                        BannerImageUrl = "/img/sample-banner.jpg"
+                    });
                     await dbContext.SaveChangesAsync();
 
                     var techCategory = dbContext.Categories.FirstOrDefault(c => c.Name == "Technology");
@@ -129,31 +125,32 @@ namespace JobListingSite.Web.Models.DataSedeer
                     {
                         dbContext.Offers.AddRange(new[]
                         {
-                        new Offer
-                        {
-                            Title = "Frontend Developer",
-                            Description = "We are looking for a creative Frontend Developer.",
-                            Salary = 50000,
-                            CompanyId = companyUser.Id,
-                            CategoryId = techCategory.CategoryId,
-                            CreatedAt = DateTime.UtcNow
-                        },
-                        new Offer
-                        {
-                            Title = "Backend Developer",
-                            Description = "Join our team to work on scalable backend systems.",
-                            Salary = 55000,
-                            CompanyId = companyUser.Id,
-                            CategoryId = techCategory.CategoryId,
-                            CreatedAt = DateTime.UtcNow.AddDays(-2)
-                        }
-                    });
+                            new Offer
+                            {
+                                Title = "Frontend Developer",
+                                Description = "We are looking for a creative Frontend Developer.",
+                                Salary = 50000,
+                                CompanyId = companyUser.Id,
+                                CategoryId = techCategory.CategoryId,
+                                CreatedAt = DateTime.UtcNow
+                            },
+                            new Offer
+                            {
+                                Title = "Backend Developer",
+                                Description = "Join our team to work on scalable backend systems.",
+                                Salary = 55000,
+                                CompanyId = companyUser.Id,
+                                CategoryId = techCategory.CategoryId,
+                                CreatedAt = DateTime.UtcNow.AddDays(-2)
+                            }
+                        });
 
                         await dbContext.SaveChangesAsync();
                     }
                 }
             }
-            // ✅ Seed Registered User
+
+            // Registered User
             string registeredEmail = "testuser@gmail.com";
             if (await userManager.FindByEmailAsync(registeredEmail) == null)
             {
@@ -164,8 +161,7 @@ namespace JobListingSite.Web.Models.DataSedeer
                     EmailConfirmed = true,
                     Name = "Test User",
                     IsCompany = false,
-                    IsApproved = true
-                };
+                    IsApproved = true              };
 
                 if ((await userManager.CreateAsync(registeredUser, "Testuser@123")).Succeeded)
                 {
@@ -176,8 +172,8 @@ namespace JobListingSite.Web.Models.DataSedeer
                         Bio = "Registered user",
                         UserId = registeredUser.Id
                     });
-
                     await dbContext.SaveChangesAsync();
+
                     var roles = await userManager.GetRolesAsync(registeredUser);
                     Console.WriteLine($"✔ Seeded {registeredUser.Email} with roles: {string.Join(", ", roles)}");
                 }

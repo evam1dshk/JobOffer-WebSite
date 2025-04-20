@@ -25,7 +25,6 @@ namespace JobListingSite.Web.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
-
         public async Task<IActionResult> Dashboard()
         {
             var totalUsers = await _context.Users.CountAsync();
@@ -33,10 +32,26 @@ namespace JobListingSite.Web.Controllers
             var totalJobs = await _context.Offers.CountAsync();
             var totalCategories = await _context.Categories.CountAsync();
 
+            // 📈 Calculate new job offers added per day (last 7 days)
+            var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
+
+            var newOffersByDay = await _context.Offers
+                .Where(o => o.CreatedAt >= oneWeekAgo)
+                .GroupBy(o => o.CreatedAt.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Count = g.Count()
+                })
+                .OrderBy(x => x.Date)
+                .ToListAsync();
+
             ViewBag.TotalUsers = totalUsers;
             ViewBag.TotalCompanies = totalCompanies;
             ViewBag.TotalJobs = totalJobs;
             ViewBag.TotalCategories = totalCategories;
+
+            ViewBag.NewOffersByDay = newOffersByDay;
 
             return View();
         }
@@ -301,9 +316,69 @@ namespace JobListingSite.Web.Controllers
         }
 
 
-        public IActionResult ViewCompanies()
+        [HttpGet]
+        public async Task<IActionResult> ViewCompanies()
         {
-            return View();
+            var companies = await _context.CompanyProfiles
+                .Include(c => c.User)
+                .ToListAsync();
+
+            return View(companies);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveCompany(int id)
+        {
+            var company = await _context.CompanyProfiles.FindAsync(id);
+
+            if (company == null)
+            {
+                TempData["ErrorMessage"] = "Company not found.";
+                return RedirectToAction(nameof(ViewCompanies));
+            }
+
+            company.IsVerified = true;
+            _context.CompanyProfiles.Update(company);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Company '{company.CompanyName}' approved successfully!";
+            return RedirectToAction(nameof(ViewCompanies));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteCompany(int id)
+        {
+            var company = await _context.CompanyProfiles.FindAsync(id);
+
+            if (company == null)
+            {
+                TempData["ErrorMessage"] = "Company not found.";
+                return RedirectToAction(nameof(ViewCompanies));
+            }
+
+            _context.CompanyProfiles.Remove(company);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Company '{company.CompanyName}' deleted successfully!";
+            return RedirectToAction(nameof(ViewCompanies));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ViewCompanyProfile(int id)
+        {
+            var company = await _context.CompanyProfiles
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (company == null)
+            {
+                TempData["ErrorMessage"] = "Company not found.";
+                return RedirectToAction(nameof(ViewCompanies));
+            }
+
+            return View(company); 
         }
 
         public IActionResult ViewOffers()

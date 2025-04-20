@@ -150,6 +150,54 @@
 
                 </tr>
                 <!-- ✅ Modal code goes here (approve/reject) -->
+                <!-- ✅ Approve Modal -->
+                <div class="modal fade" id="approveModal-@app.Id" tabindex="-1" aria-labelledby="approveLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <form asp-action="ApproveApplication" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Approve Application</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to approve <strong>@app.ApplicantName</strong>'s application?
+                                </div>
+                                <div class="modal-footer">
+                                    <input type="hidden" name="applicationId" value="@app.Id" />
+                                    <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-gradient px-4">
+                                        <i class="bi bi-check-circle me-1"></i> Approve
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ❌ Reject Modal -->
+                <div class="modal fade" id="rejectModal-@app.Id" tabindex="-1" aria-labelledby="rejectLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <form asp-action="RejectApplication" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Reject Application</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to reject <strong>@app.ApplicantName</strong>'s application?
+                                </div>
+                                <div class="modal-footer">
+                                    <input type="hidden" name="applicationId" value="@app.Id" />
+                                    <button type="button" class="btn btn-outline-green" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-gradient px-4">
+                                        <i class="bi bi-x-circle me-1"></i> Reject
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
             }
         </tbody>
     </table>

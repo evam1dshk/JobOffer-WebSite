@@ -1,0 +1,194 @@
+﻿@model JobListingSite.Data.Entities.CompanyProfile
+
+@{
+    ViewData["Title"] = "Company Profile";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .profile-card {
+        background-color: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(24, 90, 157, 0.3);
+        padding: 3rem;
+        max-width: 1000px;
+        margin: 3rem auto;
+        animation: fadeInUp 0.6s ease;
+        position: relative;
+    }
+
+    .banner-img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .logo-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        position: absolute;
+        top: 180px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: white;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #212529;
+        text-align: center;
+        margin-top: 5rem;
+    }
+
+    .verified-badge {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+        color: white;
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        margin-left: 10px;
+    }
+
+    .profile-info {
+        font-size: 1.05rem;
+        margin: 1rem 0;
+        color: #495057;
+    }
+
+        .profile-info i {
+            margin-right: 8px;
+            color: #43cea2;
+        }
+
+    .social-links a {
+        font-size: 1.5rem;
+        margin: 0 10px;
+        color: #185a9d;
+        transition: 0.3s;
+    }
+
+        .social-links a:hover {
+            color: #43cea2;
+        }
+
+    .btn-black-ombre {
+        background: linear-gradient(to right, #434343, #000000);
+        border: none;
+        color: white;
+        font-weight: 500;
+        border-radius: 8px;
+        padding: 10px 24px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-black-ombre:hover {
+            color: #43cea2;
+            box-shadow: 0 0 15px rgba(24, 90, 157, 0.7);
+            transform: scale(1.05);
+        }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="profile-card">
+
+    @if (!string.IsNullOrEmpty(Model.BannerImageUrl))
+    {
+        <img src="@Model.BannerImageUrl" alt="Banner Image" class="banner-img" />
+    }
+
+    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+    {
+        <img src="@Model.LogoUrl" alt="Company Logo" class="logo-img" />
+    }
+
+    <h2>
+        @Model.CompanyName
+        @if (Model.IsVerified)
+        {
+            <span class="verified-badge"><i class="fas fa-check-circle me-1"></i> Verified</span>
+        }
+    </h2>
+
+    @if (!string.IsNullOrEmpty(Model.Description))
+    {
+        <p class="text-center text-muted mt-3">@Model.Description</p>
+    }
+
+    <div class="row mt-5">
+        <div class="col-md-6 profile-info">
+            <i class="fas fa-map-marker-alt"></i>
+            <strong>Location:</strong> @Model.Location ?? "-"
+        </div>
+        <div class="col-md-6 profile-info">
+            <i class="fas fa-industry"></i>
+            <strong>Industry:</strong> @Model.Industry ?? "-"
+        </div>
+        <div class="col-md-6 profile-info">
+            <i class="fas fa-calendar-alt"></i>
+            <strong>Founded:</strong> @(Model.FoundedYear?.ToString() ?? "-")
+        </div>
+        <div class="col-md-6 profile-info">
+            <i class="fas fa-users"></i>
+            <strong>Employees:</strong> @(Model.NumberOfEmployees?.ToString() ?? "-")
+        </div>
+        <div class="col-md-6 profile-info">
+            <i class="fas fa-envelope"></i>
+            <strong>Contact Email:</strong> @Model.ContactEmail ?? "-"
+        </div>
+        <div class="col-md-6 profile-info">
+            <i class="fas fa-phone"></i>
+            <strong>Phone:</strong> @Model.Phone ?? "-"
+        </div>
+        <div class="col-md-12 text-center mt-4">
+            @if (!string.IsNullOrEmpty(Model.CompanyWebsite))
+            {
+                <a href="@Model.CompanyWebsite" class="btn btn-black-ombre" target="_blank">
+                    <i class="fas fa-globe me-2"></i> Visit Website
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.LinkedIn) || !string.IsNullOrEmpty(Model.Twitter))
+    {
+        <div class="social-links text-center mt-4">
+            @if (!string.IsNullOrEmpty(Model.LinkedIn))
+            {
+                <a href="@Model.LinkedIn" target="_blank"><i class="fab fa-linkedin"></i></a>
+            }
+            @if (!string.IsNullOrEmpty(Model.Twitter))
+            {
+                <a href="@Model.Twitter" target="_blank"><i class="fab fa-twitter"></i></a>
+            }
+        </div>
+    }
+
+    <div class="text-center mt-5">
+        <a asp-action="ViewCompanies" class="btn btn-black-ombre px-4 py-2 rounded-3">
+            <i class="fas fa-arrow-left me-2"></i> Back to Companies
+        </a>
+    </div>
+
+</div>

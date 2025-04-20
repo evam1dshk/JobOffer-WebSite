@@ -19,7 +19,6 @@ namespace JobListingSite.Web.Data
         public DbSet<CompanyProfile> CompanyProfiles { get; set; } = null!;
         public DbSet<JobEditRequest> JobEditRequests { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<IdentityRole>().HasData(

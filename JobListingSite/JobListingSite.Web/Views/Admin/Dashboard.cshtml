@@ -3,44 +3,214 @@
     Layout = "_Layout";
 }
 
-<div class="container py-5">
-    <div class="row g-4">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm animate__animated animate__fadeInUp">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Users</h5>
-                    <p class="display-4">@ViewBag.TotalUsers</p>
-                </div>
-            </div>
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 4rem auto;
+        padding: 3rem;
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(24, 90, 157, 0.3);
+        animation: fadeInUp 0.6s ease;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #212529;
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .stat-card {
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        color: white;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card h4 {
+            font-weight: 600;
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+    .bg-users {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+    }
+
+    .bg-companies {
+        background: linear-gradient(to right, #00c6ff, #0072ff);
+    }
+
+    .bg-jobs {
+        background: linear-gradient(to right, #f7971e, #ffd200);
+    }
+
+    .bg-categories {
+        background: linear-gradient(to right, #f8576c, #ff5858);
+    }
+
+    canvas {
+        margin-top: 4rem;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #offersChart {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s ease;
+        }
+
+            #offersChart.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+    }
+</style>
+
+<div class="dashboard-container">
+    <h2><i class="fas fa-tools me-2"></i> Admin Dashboard</h2>
+
+    <div class="card-grid">
+        <div class="stat-card bg-users">
+            <i class="fas fa-users"></i>
+            <h4>Total Users</h4>
+            <p data-target="@ViewBag.TotalUsers">0</p>
         </div>
 
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm animate__animated animate__fadeInUp">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Companies</h5>
-                    <p class="display-4">@ViewBag.TotalCompanies</p>
-                </div>
-            </div>
+        <div class="stat-card bg-companies">
+            <i class="fas fa-building"></i>
+            <h4>Total Companies</h4>
+            <p data-target="@ViewBag.TotalCompanies">0</p>
         </div>
 
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm animate__animated animate__fadeInUp">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Jobs</h5>
-                    <p class="display-4">@ViewBag.TotalJobs</p>
-                </div>
-            </div>
+        <div class="stat-card bg-jobs">
+            <i class="fas fa-briefcase"></i>
+            <h4>Total Job Offers</h4>
+            <p data-target="@ViewBag.TotalJobs">0</p>
         </div>
 
-        <div class="col-md-3">
-            <div class="card text-center shadow-sm animate__animated animate__fadeInUp">
-                <div class="card-body">
-                    <h5 class="card-title text-success">Categories</h5>
-                    <p class="display-4">@ViewBag.TotalCategories</p>
-                </div>
-            </div>
+        <div class="stat-card bg-categories">
+            <i class="fas fa-tags"></i>
+            <h4>Total Categories</h4>
+            <p data-target="@ViewBag.TotalCategories">0</p>
         </div>
-
     </div>
+
+    <canvas id="offersChart" height="120"></canvas>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Animate counters
+            const counters = document.querySelectorAll('.stat-card p');
+
+            counters.forEach(counter => {
+                counter.innerText = '0';
+                const updateCounter = () => {
+                    const target = +counter.getAttribute('data-target');
+                    const current = +counter.innerText;
+                    const increment = target / 100;
+
+                    if (current < target) {
+                        counter.innerText = `${Math.ceil(current + increment)}`;
+                        setTimeout(updateCounter, 15);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+
+                updateCounter();
+            });
+
+            const offersCanvas = document.getElementById('offersChart');
+            const offersCtx = offersCanvas.getContext('2d');
+
+            var newOffersByDay = @Html.Raw(Json.Serialize(ViewBag.NewOffersByDay));
+            var offerDates = newOffersByDay.map(x => new Date(x.Date).toLocaleDateString('en-US'));
+            var offerCounts = newOffersByDay.map(x => x.Count);
+
+            new Chart(offersCtx, {
+                type: 'line',
+                data: {
+                    labels: offerDates,
+                    datasets: [{
+                        label: 'New Job Offers',
+                        data: offerCounts,
+                        backgroundColor: 'rgba(67, 206, 162, 0.2)',
+                        borderColor: '#43cea2',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#185a9d'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#185a9d'
+                            }
+                        }
+                    }
+                }
+            });
+
+            setTimeout(() => {
+                offersCanvas.classList.add('visible');
+            }, 200);
+        });
+    </script>
+}
