@@ -45,34 +45,25 @@
         line-height: 1.6;
     }
 
-    .apply-btn, .back-btn, .company-btn {
+    .apply-btn, .back-btn, .company-btn, .btn-gradient {
         background: linear-gradient(to right, #28a745, #43cea2);
         border: none;
         color: white;
         font-weight: 500;
         padding: 10px 24px;
         border-radius: 8px;
-        transition: 0.3s ease;
-        margin-right: 10px;
+        transition: all 0.3s ease;
         text-decoration: none;
     }
 
-        .apply-btn:hover,
-        .back-btn:hover,
-        .company-btn:hover {
-            background: linear-gradient(to right, #43cea2, #28a745);
-        }
-
-    @@keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(25px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .apply-btn:hover,
+    .back-btn:hover,
+    .company-btn:hover,
+    .btn-gradient:hover {
+        background: linear-gradient(to right, #43cea2, #28a745);
+        color: white;
+        box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+        transform: translateY(-2px);
     }
 
     .button-row {
@@ -82,12 +73,31 @@
         gap: 10px;
         margin-top: 2rem;
     }
+
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(25px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (max-width: 576px) {
+        .button-row {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .apply-btn, .back-btn, .company-btn, .btn-gradient {
+            width: 100%;
+            text-align: center;
+        }
+    }
 </style>
 
 <div class="container py-5">
     <div class="details-card mx-auto">
         <div class="job-header">
-            <h2 class="job-title"><i class="fas fa-briefcase me-2"></i>@Model.Title</h2>
+            <h2 class="job-title">
+                <i class="fas fa-briefcase me-2"></i>@Model.Title
+            </h2>
             <p class="job-meta">
                 <i class="fas fa-building me-1"></i> @Model.Company?.CompanyProfile?.CompanyName |
                 <i class="fas fa-tag me-1"></i> @Model.Category?.Name |
@@ -130,6 +140,13 @@
                 </a>
             }
 
+            @if (User.Identity?.IsAuthenticated == true && (ViewData["IsCompany"] as bool? ?? false))
+            {
+                <a href="~/Company/ManageJobs" class="btn-gradient" title="Go to your posted jobs">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Manage Jobs
+                </a>
+            }
+
             <a asp-controller="Job" asp-action="Browse" class="back-btn">
                 <i class="fas fa-arrow-left me-2"></i> Back to Listings
             </a>
@@ -137,7 +154,6 @@
     </div>
 </div>
 
-<!-- ✅ SweetAlert and Button Scripts -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"] ?? ""));
