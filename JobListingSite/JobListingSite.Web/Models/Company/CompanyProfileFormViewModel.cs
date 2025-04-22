@@ -33,9 +33,6 @@ namespace JobListingSite.Web.Models.Company
         public string? Twitter { get; set; }
         public int? NumberOfEmployees { get; set; }
         public IFormFile? Logo { get; set; }
-        public IFormFile? Banner { get; set; }
-
         public string? LogoUrl { get; set; }
-        public string? BannerUrl { get; set; }
     }
 }

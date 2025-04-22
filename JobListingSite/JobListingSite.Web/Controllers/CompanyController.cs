@@ -5,11 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using JobListingSite.Web.Data;
 using JobListingSite.Data.Entities;
 using JobListingSite.Web.Models.Company;
-using Amazon.S3;
-using Amazon.S3.Transfer;
-using Microsoft.Extensions.Configuration;
-using Amazon.S3.Model;
-using Amazon.Runtime;
 using JobListingSite.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using JobListingSite.Data.Enums;
@@ -27,16 +22,14 @@ namespace JobListingSite.Web.Controllers
         private readonly JobListingDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly IWebHostEnvironment _hostEnvironment;
-        private readonly IAmazonS3 _s3Client;
         private readonly IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
 
-        public CompanyController(JobListingDbContext context, UserManager<User> userManager, IWebHostEnvironment hostEnvironment, IAmazonS3 s3Client, IConfiguration configuration, IEmailSender emailSender)
+        public CompanyController(JobListingDbContext context, UserManager<User> userManager, IWebHostEnvironment hostEnvironment, IConfiguration configuration, IEmailSender emailSender)
         {
             _context = context;
             _userManager = userManager;
             _hostEnvironment = hostEnvironment;
-            _s3Client = s3Client;
             _configuration = configuration;
             _emailSender = emailSender;
         }
@@ -88,46 +81,30 @@ namespace JobListingSite.Web.Controllers
             return RedirectToAction("ViewEditRequests");
         }
 
-    private async Task<string> UploadFileToS3Async(IFormFile file, string folder)
+        private async Task<string> UploadLogoLocallyAsync(IFormFile logo)
         {
-            var bucketName = _configuration["AWS:BucketName"];
-            var fileName = $"{folder}/{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            if (logo == null || logo.Length == 0)
+                throw new Exception("Invalid logo file.");
 
-            try
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/logos");
+
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder); // ✅ Create the folder if it doesn't exist
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(logo.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                using var stream = file.OpenReadStream();
-
-                var request = new PutObjectRequest
-                {
-                    BucketName = bucketName,
-                    Key = fileName,
-                    InputStream = stream,
-                    ContentType = file.ContentType
-                };
-
-                var response = await _s3Client.PutObjectAsync(request);
-
-                if (response.HttpStatusCode != System.Net.HttpStatusCode.OK)
-                    throw new Exception("Upload failed");
-
-                return $"https://{bucketName}.s3.amazonaws.com/{fileName}";
+                await logo.CopyToAsync(stream);
             }
-            catch (AmazonS3Exception ex)
-            {
-                Console.WriteLine("AmazonS3Exception: " + ex.Message);
-                throw;
-            }
-            catch (AmazonServiceException ex)
-            {
-                Console.WriteLine("AmazonServiceException: " + ex.Message);
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("General Exception: " + ex.Message);
-                throw;
-            }
+
+            // Return the relative path (for database)
+            return "/uploads/logos/" + uniqueFileName;
         }
+
+
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Profile(string id, string? returnTo)
@@ -172,7 +149,6 @@ namespace JobListingSite.Web.Controllers
                 Twitter = user.CompanyProfile.Twitter,
                 NumberOfEmployees = user.CompanyProfile.NumberOfEmployees,
                 LogoUrl = user.CompanyProfile.LogoUrl,
-                BannerUrl = user.CompanyProfile.BannerImageUrl
             };
 
             return View(vm);
@@ -189,18 +165,12 @@ namespace JobListingSite.Web.Controllers
             if (user == null) return NotFound();
             if (!ModelState.IsValid) return View(model);
 
-            // Upload to S3
             if (model.Logo != null)
             {
-                user.CompanyProfile.LogoUrl = await UploadFileToS3Async(model.Logo, "logos");
+                user.CompanyProfile.LogoUrl = await UploadLogoLocallyAsync(model.Logo);
+
             }
 
-            if (model.Banner != null)
-            {
-                user.CompanyProfile.BannerImageUrl = await UploadFileToS3Async(model.Banner, "banners");
-            }
-
-            // Save other fields
             user.CompanyProfile.CompanyName = model.CompanyName;
             user.CompanyProfile.Description = model.Description;
             user.CompanyProfile.Industry = model.Industry;

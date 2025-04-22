@@ -115,30 +115,41 @@
     <h2><i class="fas fa-tools me-2"></i> Admin Dashboard</h2>
 
     <div class="card-grid">
-        <div class="stat-card bg-users">
-            <i class="fas fa-users"></i>
-            <h4>Total Users</h4>
-            <p data-target="@ViewBag.TotalUsers">0</p>
-        </div>
 
-        <div class="stat-card bg-companies">
-            <i class="fas fa-building"></i>
-            <h4>Total Companies</h4>
-            <p data-target="@ViewBag.TotalCompanies">0</p>
-        </div>
+        <a asp-action="ManageUsers" asp-controller="Admin" class="text-decoration-none">
+            <div class="stat-card bg-users">
+                <i class="fas fa-users"></i>
+                <h4>Total Users</h4>
+                <p data-target="@ViewBag.TotalUsers">0</p>
+            </div>
+        </a>
 
-        <div class="stat-card bg-jobs">
-            <i class="fas fa-briefcase"></i>
-            <h4>Total Job Offers</h4>
-            <p data-target="@ViewBag.TotalJobs">0</p>
-        </div>
+        <a asp-action="ManageCompanies" asp-controller="Admin" class="text-decoration-none">
+            <div class="stat-card bg-companies">
+                <i class="fas fa-building"></i>
+                <h4>Total Companies</h4>
+                <p data-target="@ViewBag.TotalCompanies">0</p>
+            </div>
+        </a>
 
-        <div class="stat-card bg-categories">
-            <i class="fas fa-tags"></i>
-            <h4>Total Categories</h4>
-            <p data-target="@ViewBag.TotalCategories">0</p>
-        </div>
+        <a asp-action="ViewOffers" asp-controller="Admin" class="text-decoration-none">
+            <div class="stat-card bg-jobs">
+                <i class="fas fa-briefcase"></i>
+                <h4>Total Job Offers</h4>
+                <p data-target="@ViewBag.TotalJobs">0</p>
+            </div>
+        </a>
+
+        <a asp-action="ManageCategories" asp-controller="Admin" class="text-decoration-none">
+            <div class="stat-card bg-categories">
+                <i class="fas fa-tags"></i>
+                <h4>Total Categories</h4>
+                <p data-target="@ViewBag.TotalCategories">0</p>
+            </div>
+        </a>
+
     </div>
+
 
     <canvas id="offersChart" height="120"></canvas>
 </div>

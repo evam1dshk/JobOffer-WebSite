@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using X.PagedList;
 using X.PagedList.Extensions;
+using X.PagedList;
+
 
 namespace JobListingSite.Web.Controllers
 {
@@ -114,34 +115,31 @@ namespace JobListingSite.Web.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ManageUsers(int? page)
+        public async Task<IActionResult> ManageCompanies(int? page)
         {
-            var users = await _userManager.Users.ToListAsync();
-            var roles = await _roleManager.Roles.ToListAsync();
-
-            var userViewModels = new List<UserViewModel>();
-
-            foreach (var user in users)
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
-
-                userViewModels.Add(new UserViewModel
-                {
-                    UserId = user.Id,
-                    UserName = user.UserName,
-                    Email = user.Email,
-                    Role = userRoles.FirstOrDefault() ?? "None",
-                    IsLockedOut = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow
-                });
-            }
-
             int pageSize = 7;
             int pageNumber = page ?? 1;
 
-            var pagedUsers = userViewModels.ToPagedList(pageNumber, pageSize);
+            var companies = await _context.Users
+                .Where(u => u.IsCompany)
+                .Include(u => u.CompanyProfile)
+                .Select(u => new UserViewModel
+                {
+                    UserId = u.Id,
+                    UserName = u.CompanyProfile.CompanyName ?? u.UserName,
+                    Email = u.Email,
+                    Role = "Company",
+                    Industry = u.CompanyProfile.Industry,
+                    IsLockedOut = u.LockoutEnd.HasValue && u.LockoutEnd > DateTime.UtcNow
+                })
+                .OrderBy(u => u.UserName)
+                .ToListAsync();
 
-            return View(pagedUsers);
+            var pagedCompanies = companies.ToPagedList(pageNumber, pageSize);
+
+            return View(pagedCompanies);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -287,7 +285,6 @@ namespace JobListingSite.Web.Controllers
         {
             if (string.IsNullOrEmpty(model.NewRole))
             {
-                // Load roles again because View needs it even after error
                 model.AvailableRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
                 TempData["ErrorMessage"] = "Please select a new role.";
                 return View(model);
@@ -381,10 +378,132 @@ namespace JobListingSite.Web.Controllers
             return View(company); 
         }
 
-        public IActionResult ViewOffers()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ManageUsers(int page = 1)
         {
-            return View();
+            var users = await _context.Users
+                .Where(u => !u.IsCompany)
+                .OrderBy(u => u.Name)
+                .ToListAsync();
+
+            var userViewModels = new List<UserViewModel>();
+
+            foreach (var u in users)
+            {
+                var userRoles = await _userManager.GetRolesAsync(u);
+
+                userViewModels.Add(new UserViewModel
+                {
+                    UserId = u.Id,
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    Role = userRoles.FirstOrDefault() ?? "None",
+                    IsLockedOut = u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTime.UtcNow
+                });
+            }
+
+            var pagedList = userViewModels.ToPagedList(page, 7);
+
+            return View(pagedList);
         }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ViewOffers(int page = 1)
+        {
+            var offers = await _context.Offers
+                .Include(o => o.Category)
+                .Include(o => o.Company)
+                    .ThenInclude(c => c.CompanyProfile)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
+            var pagedOffers = offers.ToPagedList(page, 7);
+
+            return View(pagedOffers);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditOffer(int id)
+        {
+            var offer = await _context.Offers
+                .Include(o => o.Category)
+                .Include(o => o.Company)
+                .FirstOrDefaultAsync(o => o.OfferId == id);
+
+            if (offer == null)
+                return NotFound();
+
+            return View(offer);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditOffer(Offer model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var offer = await _context.Offers.FindAsync(model.OfferId);
+            if (offer == null)
+                return NotFound();
+
+            offer.Title = model.Title;
+            offer.Description = model.Description;
+            offer.Salary = model.Salary;
+            offer.CategoryId = model.CategoryId;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Job Offer updated successfully!";
+            return RedirectToAction(nameof(ViewOffers));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditCompanyProfile(string id)
+        {
+            var user = await _context.Users
+                .Include(u => u.CompanyProfile)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null || user.CompanyProfile == null)
+                return NotFound();
+
+            return View(user.CompanyProfile);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditCompanyProfile(CompanyProfile model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var company = await _context.CompanyProfiles.FindAsync(model.Id);
+            if (company == null)
+                return NotFound();
+
+            company.CompanyName = model.CompanyName;
+            company.Description = model.Description;
+            company.Industry = model.Industry;
+            company.ContactEmail = model.ContactEmail;
+            company.Phone = model.Phone;
+            company.LinkedIn = model.LinkedIn;
+            company.Twitter = model.Twitter;
+            company.Location = model.Location;
+            company.FoundedYear = model.FoundedYear;
+            company.NumberOfEmployees = model.NumberOfEmployees;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Company Profile updated successfully!";
+            return RedirectToAction(nameof(ManageCompanies));
+        }
+
+
 
         public IActionResult ViewEditRequests()
         {

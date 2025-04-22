@@ -1,0 +1,224 @@
+﻿@model X.PagedList.IPagedList<JobListingSite.Web.Models.Admin.UserViewModel>
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+
+@{
+    ViewData["Title"] = "Manage Companies";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .manage-card {
+        background-color: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(24, 90, 157, 0.3);
+        padding: 3rem;
+        max-width: 1100px;
+        width: 100%;
+        margin: auto;
+        margin-top: 3rem;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #212529;
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .btn-black-ombre {
+        background: linear-gradient(to right, #434343, #000000);
+        border: none;
+        color: white;
+        font-weight: 500;
+        border-radius: 8px;
+        padding: 10px 24px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-black-ombre:hover {
+            color: #43cea2;
+            box-shadow: 0 0 15px rgba(24, 90, 157, 0.7);
+            transform: scale(1.05);
+        }
+
+    table {
+        width: 100%;
+        margin-top: 2.5rem;
+        background-color: #f1f3f5;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    th {
+        background-color: #e9ecef;
+        color: #343a40;
+        font-weight: bold;
+        text-align: center;
+        vertical-align: middle;
+        padding: 15px;
+        font-size: 1.1rem;
+    }
+
+    td {
+        background-color: #f8f9fa;
+        text-align: center;
+        vertical-align: middle;
+        padding: 14px;
+        font-size: 1rem;
+    }
+
+    tbody tr:hover {
+        background-color: #dee2e6;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .btn-ombre-green, .btn-ombre-red {
+        border: none;
+        font-weight: 500;
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-size: 0.9rem;
+        min-width: 120px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-ombre-green {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+        color: white;
+    }
+
+        .btn-ombre-green:hover {
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(67, 206, 162, 0.6);
+            transform: scale(1.05);
+        }
+
+    .btn-ombre-red {
+        background: linear-gradient(to right, #ff416c, #ff4b2b);
+        color: white;
+    }
+
+        .btn-ombre-red:hover {
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 75, 43, 0.7);
+            transform: scale(1.05);
+        }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        padding: 1.5rem 0;
+        list-style: none;
+    }
+
+        .pagination li a, .pagination li span {
+            color: white;
+            background: linear-gradient(to right, #434343, #000000);
+            border: none;
+            padding: 10px 18px;
+            margin: 0 5px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+            .pagination li a:hover, .pagination li span:hover {
+                background: linear-gradient(to right, #43cea2, #185a9d);
+                color: white;
+                transform: scale(1.1);
+                box-shadow: 0 0 10px rgba(67, 206, 162, 0.6);
+            }
+
+        .pagination .active span {
+            background: linear-gradient(to right, #43cea2, #185a9d);
+            color: white;
+            box-shadow: 0 0 15px rgba(67, 206, 162, 0.7);
+            transform: scale(1.1);
+        }
+</style>
+
+<div class="manage-card">
+    <h2><i class="fas fa-building me-2"></i> Manage Companies</h2>
+
+    <div class="d-flex justify-content-center mb-4">
+        <a asp-action="Dashboard" asp-controller="Admin" class="btn btn-black-ombre">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Email</th>
+                <th>Industry</th>
+                <th style="width: 220px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var company in Model)
+            {
+                <tr>
+                    <td>@company.UserName</td>
+                    <td>@company.Email</td>
+                    <td>@company.Industry</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a asp-action="EditCompany" asp-route-userId="@company.UserId" class="btn btn-ombre-green btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+
+                            <form asp-action="DeleteCompany" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@company.UserId" />
+                                <button type="submit" class="btn btn-ombre-red btn-sm">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-center mt-4">
+        @Html.PagedListPager(Model, page => Url.Action("ManageCompanies", new { page }),
+        new PagedListRenderOptions
+        {
+        Display = PagedListDisplayMode.IfNeeded,
+        UlElementClasses = new[] { "pagination", "justify-content-center" },
+        LiElementClasses = new[] { "page-item" },
+        PageClasses = new[] { "page-link" },
+        MaximumPageNumbersToDisplay = 5,
+        })
+    </div>
+</div>
