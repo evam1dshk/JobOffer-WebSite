@@ -3,7 +3,7 @@ using JobListingSite.Data.Enums;
 using JobListingSite.Web.Data;
 using JobListingSite.Web.Models.Company;
 using JobListingSite.Web.Models.HR;
-using JobListingSite.Web.ViewModels;
+using JobListingSite.Web.Models.JobListing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

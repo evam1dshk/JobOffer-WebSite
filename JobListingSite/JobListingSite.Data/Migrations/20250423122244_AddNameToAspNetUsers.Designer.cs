@@ -4,6 +4,7 @@ using JobListingSite.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobListingSite.Web.Data.Migrations
 {
     [DbContext(typeof(JobListingDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250423122244_AddNameToAspNetUsers")]
+    partial class AddNameToAspNetUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -290,6 +292,7 @@ namespace JobListingSite.Web.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -363,28 +366,28 @@ namespace JobListingSite.Web.Data.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "127c156e-6d3d-4a50-b4ac-05c1ee767134",
+                            ConcurrencyStamp = "4d22ffbf-8fb5-4890-af80-bda13c27a824",
                             Name = "Registered",
                             NormalizedName = "REGISTERED"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "64da26ce-d9a2-4c06-8c71-d7201c38b15f",
+                            ConcurrencyStamp = "73d67237-f1dc-4569-9b5a-1d0ee9d49d96",
                             Name = "HR",
                             NormalizedName = "HR"
                         },
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "4db1791e-de2a-4e85-a438-6038899e6e3a",
+                            ConcurrencyStamp = "d1154dfc-5154-404f-a26f-e6f25ed8f917",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "4",
-                            ConcurrencyStamp = "332820ac-d617-4229-90e2-05e8de9dae71",
+                            ConcurrencyStamp = "956ca07a-51a3-4ad6-bca9-b252aee4bc06",
                             Name = "Company",
                             NormalizedName = "COMPANY"
                         });

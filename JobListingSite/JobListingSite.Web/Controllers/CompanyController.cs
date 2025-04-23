@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using JobListingSite.Web.Data;
 using JobListingSite.Data.Entities;
 using JobListingSite.Web.Models.Company;
-using JobListingSite.Web.ViewModels;
+using JobListingSite.Web.Models.JobListing;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using JobListingSite.Data.Enums;
 using Microsoft.AspNetCore.Identity.UI.Services;

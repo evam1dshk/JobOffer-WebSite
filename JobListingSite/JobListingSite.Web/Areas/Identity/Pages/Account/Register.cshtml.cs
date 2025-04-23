@@ -75,7 +75,7 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public class InputModel
+        public class InputModel : IValidatableObject
         {
             [Display(Name = "Full Name")]
             public string? Name { get; set; }
@@ -100,7 +100,7 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
             public string? CompanyName { get; set; }
 
             [Display(Name = "Industry")]
-            public int? CategoryId { get; set; } 
+            public int? CategoryId { get; set; }
 
             [Display(Name = "Phone Number")]
             public string? PhoneNumber { get; set; }
@@ -108,7 +108,20 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
             [Display(Name = "Industry")]
             public string? Industry { get; set; }
 
+            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            {
+                if (!IsCompany && string.IsNullOrWhiteSpace(Name))
+                {
+                    yield return new ValidationResult("Full Name is required.", new[] { nameof(Name) });
+                }
+
+                if (IsCompany && string.IsNullOrWhiteSpace(CompanyName))
+                {
+                    yield return new ValidationResult("Company Name is required.", new[] { nameof(CompanyName) });
+                }
+            }
         }
+
         public List<SelectListItem> Categories { get; set; }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -130,6 +143,13 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
+            // ✅ Check if a user with the same email already exists
+            var existingUser = await _userManager.FindByEmailAsync(Input.Email);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Input.Email", "An account with this email already exists.");
+            }
+
             if (ModelState.IsValid)
             {
                 var user = new User
@@ -147,11 +167,11 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    // ✅ Assign Role
+                    // ✅ Assign role
                     string roleName = Input.IsCompany ? "Company" : "Registered";
                     await _userManager.AddToRoleAsync(user, roleName);
 
-                    // ✅ Create CompanyProfile if Company
+                    // ✅ Create Company Profile
                     if (Input.IsCompany)
                     {
                         var companyProfile = new CompanyProfile
@@ -161,16 +181,18 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
                             Industry = Input.Industry,
                             Phone = Input.PhoneNumber
                         };
+
                         _context.CompanyProfiles.Add(companyProfile);
                         await _context.SaveChangesAsync();
                     }
                     else
                     {
-                        // ✅ Create basic Profile for Registered users
+                        // ✅ Create basic user profile
                         var profile = new Profile
                         {
                             UserId = user.Id
                         };
+
                         _context.Profiles.Add(profile);
                         await _context.SaveChangesAsync();
                     }
@@ -199,12 +221,21 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
                     }
                 }
 
+                // ✅ Handle Identity errors with friendly messaging
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    if (error.Code == "DuplicateUserName")
+                    {
+                        ModelState.AddModelError("Input.Email", "This email is already registered.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
             }
 
+            // If we got this far, something failed.
             return Page();
         }
 

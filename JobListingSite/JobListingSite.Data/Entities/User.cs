@@ -10,9 +10,8 @@ namespace JobListingSite.Data.Entities
 {
     public class User : IdentityUser
     {
-        [Required]
         [StringLength(100)]
-        public string Name { get; set; } = null!;
+        public string? Name { get; set; } = null!;
         public bool IsCompany { get; set; }
         public bool IsApproved { get; set; }
         public Profile? Profile { get; set; }

@@ -192,7 +192,7 @@
                     <td>@company.Industry</td>
                     <td>
                         <div class="action-buttons">
-                            <a asp-action="EditCompany" asp-route-userId="@company.UserId" class="btn btn-ombre-green btn-sm">
+                            <a asp-action="EditCompanyProfile" asp-route-id="@company.CompanyProfileId" class="btn btn-ombre-green btn-sm">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
 
@@ -222,3 +222,25 @@
         })
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"] ?? ""));
+            if (successMessage.trim()) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: successMessage,
+                    confirmButtonColor: '#28a745',
+                    timer: 2500,
+                    showConfirmButton: false,
+                    position: 'center',
+                    backdrop: true
+                });
+            }
+        });
+    </script>
+}

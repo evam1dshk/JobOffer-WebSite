@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace JobListingSite.Web.ViewModels
+namespace JobListingSite.Web.Models.JobListing
 {
     public class JobFormViewModel
     {

@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Data;
 using X.PagedList.Extensions;
 using X.PagedList;
-
+using JobListingSite.Web.Models.JobListing;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -130,7 +131,8 @@ namespace JobListingSite.Web.Controllers
                     Email = u.Email,
                     Role = "Company",
                     Industry = u.CompanyProfile.Industry,
-                    IsLockedOut = u.LockoutEnd.HasValue && u.LockoutEnd > DateTime.UtcNow
+                    IsLockedOut = u.LockoutEnd.HasValue && u.LockoutEnd > DateTime.UtcNow,
+                     CompanyProfileId = u.CompanyProfile.Id
                 })
                 .OrderBy(u => u.UserName)
                 .ToListAsync();
@@ -423,6 +425,7 @@ namespace JobListingSite.Web.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditOffer(int id)
         {
             var offer = await _context.Offers
@@ -433,19 +436,44 @@ namespace JobListingSite.Web.Controllers
             if (offer == null)
                 return NotFound();
 
-            return View(offer);
+            var categories = await _context.Categories
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
+                }).ToListAsync();
+
+            var model = new JobFormViewModel
+            {
+                OfferId = offer.OfferId,
+                Title = offer.Title,
+                Description = offer.Description,
+                Salary = offer.Salary,
+                CategoryId = offer.CategoryId,
+                Categories = categories
+            };
+
+            return View(model);
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditOffer(Offer model)
+        public async Task<IActionResult> EditOffer(JobFormViewModel model)
         {
             if (!ModelState.IsValid)
             {
+                model.Categories = await _context.Categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    }).ToListAsync();
                 return View(model);
             }
 
-            var offer = await _context.Offers.FindAsync(model.OfferId);
+            var offer = await _context.Offers.FirstOrDefaultAsync(o => o.OfferId == model.OfferId);
+
             if (offer == null)
                 return NotFound();
 
@@ -456,22 +484,24 @@ namespace JobListingSite.Web.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Job Offer updated successfully!";
-            return RedirectToAction(nameof(ViewOffers));
+            TempData["SuccessMessage"] = "Offer updated successfully!";
+            return RedirectToAction("ViewOffers");
         }
 
         [HttpGet]
-        public async Task<IActionResult> EditCompanyProfile(string id)
+        public async Task<IActionResult> EditCompanyProfile(int id)
         {
-            var user = await _context.Users
-                .Include(u => u.CompanyProfile)
-                .FirstOrDefaultAsync(u => u.Id == id);
+            var company = await _context.CompanyProfiles
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (user == null || user.CompanyProfile == null)
+            if (company == null)
                 return NotFound();
 
-            return View(user.CompanyProfile);
+            return View(company);
         }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -479,13 +509,26 @@ namespace JobListingSite.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine("❌ Validation error: " + error.ErrorMessage);
+                }
+
+                TempData["ErrorMessage"] = "Model state invalid!";
                 return View(model);
             }
 
-            var company = await _context.CompanyProfiles.FindAsync(model.Id);
-            if (company == null)
-                return NotFound();
+            var company = await _context.CompanyProfiles
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == model.Id);
 
+            if (company == null)
+            {
+                TempData["ErrorMessage"] = "Company not found.";
+                return RedirectToAction(nameof(ManageCompanies));
+            }
+
+            // ✅ Update only the editable fields
             company.CompanyName = model.CompanyName;
             company.Description = model.Description;
             company.Industry = model.Industry;
@@ -499,11 +542,9 @@ namespace JobListingSite.Web.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Company Profile updated successfully!";
+            TempData["SuccessMessage"] = "Company profile updated successfully!";
             return RedirectToAction(nameof(ManageCompanies));
         }
-
-
 
         public IActionResult ViewEditRequests()
         {

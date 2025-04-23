@@ -2,7 +2,7 @@
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
-    Layout = "~/Views/Shared/_Layout.cshtml"; // ✅ Ensures header/footer show
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section Styles {
@@ -18,7 +18,6 @@
             border-radius: 20px;
             padding: 2.5rem;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            animation: fadeInUp 0.5s ease-in-out;
             max-width: 500px;
             margin: 3rem auto;
         }
@@ -46,28 +45,6 @@
                 background: linear-gradient(to right, #218838, #28a745);
             }
 
-        .progress-step {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
-        }
-
-            .progress-step div {
-                flex: 1;
-                text-align: center;
-                color: #aaa;
-            }
-
-                .progress-step div.active {
-                    color: #28a745;
-                    font-weight: 600;
-                }
-
-        .fade-section {
-            animation: fadeIn 0.5s ease;
-        }
-
         .spinner-border {
             display: none;
         }
@@ -81,45 +58,27 @@
             pointer-events: none;
         }
 
-        @@keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .fade-section {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        @@keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-
-            to {
+            .fade-section.show {
+                display: block;
                 opacity: 1;
-                transform: translateY(0);
             }
-        }
     </style>
 }
 
     <h1 class="text-center text-white mt-4 mb-3">Create Account</h1>
 
     <div class="auth-card">
-        <div class="progress-step mb-4">
-            <div id="step-user" class="active">User Info</div>
-            <div id="step-company">Company Info</div>
-            <div>Account</div>
-        </div>
-
         <form method="post" id="registerForm" asp-route-returnUrl="@Model.ReturnUrl">
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <!-- 🔄 Spinner -->
+            <!-- Spinner -->
             <div id="spinner" class="text-center mb-3">
                 <div class="spinner-border text-success" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -130,16 +89,16 @@
             <div class="form-floating mb-3">
                 <select id="registrationRole" class="form-select">
                     <option value="">-- Select Role --</option>
-                    <option value="user">👤 Regular User</option>
-                    <option value="company">🏢 Company</option>
+                    <option value="user" selected="@(Model.Input?.IsCompany == false)">👤 Regular User</option>
+                    <option value="company" selected="@(Model.Input?.IsCompany == true)">🏢 Company</option>
                 </select>
                 <label>Registering as</label>
             </div>
 
             <input type="hidden" asp-for="Input.IsCompany" id="isCompanyHidden" />
 
-            <!-- 👤 User Fields -->
-            <div id="userFields" class="fade-section mb-3" style="display:none;">
+            <!-- 👤 User Fields (Full Name only for users) -->
+            <div id="userFields" class="fade-section">
                 <div class="form-floating position-relative mb-3">
                     <i class="fas fa-user form-icon"></i>
                     <input asp-for="Input.Name" class="form-control" />
@@ -149,10 +108,8 @@
             </div>
 
             <!-- 🏢 Company Fields -->
-            <div id="companyFields" class="fade-section mb-3" style="display:none;">
-
-                <!-- Industry ABOVE CompanyName -->
-                <div class="form-floating position-relative mb-3">
+            <div id="companyFields" class="fade-section">
+                <div class="form-floating mb-3">
                     <select asp-for="Input.CategoryId" asp-items="Model.Categories" class="form-select">
                         <option value="">🌐 Choose Industry</option>
                     </select>
@@ -160,35 +117,37 @@
                     <span asp-validation-for="Input.CategoryId" class="text-danger"></span>
                 </div>
 
-                <div class="form-floating position-relative mb-3">
+                <div class="form-floating mb-3">
                     <i class="fas fa-building form-icon"></i>
                     <input asp-for="Input.CompanyName" class="form-control" />
                     <label asp-for="Input.CompanyName"></label>
+                    <span asp-validation-for="Input.CompanyName" class="text-danger"></span>
                 </div>
 
-                <div class="form-floating position-relative mb-3">
+                <div class="form-floating mb-3">
                     <i class="fas fa-phone form-icon"></i>
                     <input asp-for="Input.PhoneNumber" class="form-control" />
                     <label asp-for="Input.PhoneNumber"></label>
+                    <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
                 </div>
             </div>
 
-            <!-- 📧 Common Fields -->
-            <div class="form-floating position-relative mb-3">
+            <!-- Common Fields -->
+            <div class="form-floating mb-3">
                 <i class="fas fa-envelope form-icon"></i>
                 <input asp-for="Input.Email" class="form-control" autocomplete="username" />
                 <label asp-for="Input.Email"></label>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
 
-            <div class="form-floating position-relative mb-3">
+            <div class="form-floating mb-3">
                 <i class="fas fa-lock form-icon"></i>
                 <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
                 <label asp-for="Input.Password"></label>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
 
-            <div class="form-floating position-relative mb-4">
+            <div class="form-floating mb-4">
                 <i class="fas fa-lock form-icon"></i>
                 <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
                 <label asp-for="Input.ConfirmPassword"></label>
@@ -207,46 +166,37 @@
 
     @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="https://kit.fontawesome.com/a2e0e6f91e.js" crossorigin="anonymous"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const roleSelector = document.getElementById("registrationRole");
             const userFields = document.getElementById("userFields");
             const companyFields = document.getElementById("companyFields");
             const isCompanyHidden = document.getElementById("isCompanyHidden");
-            const form = document.getElementById("registerForm");
             const spinner = document.getElementById("spinner");
-            const stepUser = document.getElementById("step-user");
-            const stepCompany = document.getElementById("step-company");
 
             function toggleFields() {
                 const selected = roleSelector.value;
-                stepUser.classList.remove("active");
-                stepCompany.classList.remove("active");
+
+                userFields.classList.remove("show");
+                companyFields.classList.remove("show");
 
                 if (selected === "user") {
-                    userFields.style.display = "block";
-                    companyFields.style.display = "none";
+                    userFields.classList.add("show");
                     isCompanyHidden.value = false;
-                    stepUser.classList.add("active");
                 } else if (selected === "company") {
-                    userFields.style.display = "none";
-                    companyFields.style.display = "block";
+                    companyFields.classList.add("show");
                     isCompanyHidden.value = true;
-                    stepCompany.classList.add("active");
                 } else {
-                    userFields.style.display = "none";
-                    companyFields.style.display = "none";
                     isCompanyHidden.value = "";
                 }
             }
 
-            form.addEventListener("submit", function () {
-                spinner.style.display = "block";
-            });
-
             roleSelector.addEventListener("change", toggleFields);
             toggleFields();
+
+            document.getElementById("registerForm").addEventListener("submit", function () {
+                spinner.style.display = "block";
+            });
         });
     </script>
 }
