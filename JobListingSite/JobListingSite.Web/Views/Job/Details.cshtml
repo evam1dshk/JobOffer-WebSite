@@ -64,15 +64,18 @@
         text-decoration: none;
         text-align: center;
         min-width: 220px;
-        transition: all 0.4s ease;
+        height: 48px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.4s ease;
         box-shadow: 0 0 20px rgba(67, 206, 162, 1);
+        white-space: nowrap;
     }
 
         .action-btn i {
-            margin-right: 6px;
+            margin-right: 8px;
+            font-size: 1rem;
         }
 
         .action-btn:hover {
@@ -84,16 +87,18 @@
 
 
     @@media (max-width: 576px) {
-        .button-row {
-            flex-direction: column;
-            align-items: center;
+        .action-btn {
+            width: 100% !important;
+            min-width: unset;
+            font-size: 1rem;
         }
 
-        .action-btn {
-            width: 100%;
-            min-width: unset;
+        .button-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
         }
-    }
+
 </style>
 
 <div class="container py-5">
@@ -117,9 +122,13 @@
         <div class="button-row">
             @if (User.Identity != null && User.Identity.IsAuthenticated && !(ViewData["IsCompany"] as bool? ?? false))
             {
-                <a asp-action="Apply" asp-controller="Job" asp-route-jobId="@Model.OfferId" class="action-btn">
-                    <i class="fas fa-paper-plane"></i> Apply Now
-                </a>
+                <form asp-action="Apply" method="post" id="applyForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="jobId" value="@Model.OfferId" />
+                    <button id="applyButton" type="submit" class="action-btn">
+                        <i class="fas fa-paper-plane"></i> Apply Now
+                    </button>
+                </form>
             }
             else if (!User.Identity?.IsAuthenticated ?? false)
             {
@@ -146,7 +155,7 @@
 
             @if (Context.User.IsInRole("Company"))
             {
-                <a asp-controller="Company" asp-action="CompanyManageJobs" class="action-btn">
+                <a asp-controller="Company" asp-action="ManageJobs" class="action-btn">
                     <i class="fas fa-briefcase"></i> Manage Jobs
                 </a>
             }
