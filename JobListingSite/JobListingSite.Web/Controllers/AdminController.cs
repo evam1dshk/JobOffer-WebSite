@@ -413,11 +413,12 @@ namespace JobListingSite.Web.Controllers
         public async Task<IActionResult> ViewOffers(int page = 1)
         {
             var offers = await _context.Offers
-                .Include(o => o.Category)
-                .Include(o => o.Company)
-                    .ThenInclude(c => c.CompanyProfile)
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
+            .Include(o => o.Company)
+            .ThenInclude(c => c.CompanyProfile)
+            .Include(o => o.Category)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+
 
             var pagedOffers = offers.ToPagedList(page, 7);
 
