@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using X.PagedList;
+using X.PagedList.Mvc.Core;
 using X.PagedList.Extensions;
 
 namespace JobListingSite.Web.Controllers
@@ -117,36 +118,52 @@ namespace JobListingSite.Web.Controllers
             return View("BrowseOffers", offers);
         }
 
-        public async Task<IActionResult> ViewApplications(int offerId)
+        public IActionResult ViewApplications(int offerId, string? statusFilter, int page = 1)
         {
-            var offer = await _context.Offers.Include(o => o.Category).FirstOrDefaultAsync(o => o.OfferId == offerId);
+            const int pageSize = 10;
+
+            var offer = _context.Offers
+                .Include(o => o.Category)
+                .FirstOrDefault(o => o.OfferId == offerId);
+
             if (offer == null) return NotFound();
 
-            var applications = await _context.JobApplications
-                .Include(a => a.User)
-                    .ThenInclude(u => u.Profile)
+            var applicationsQuery = _context.JobApplications
+                .Include(a => a.User).ThenInclude(u => u.Profile)
                 .Where(a => a.OfferId == offerId)
-                .ToListAsync();
+                .OrderByDescending(a => a.AppliedOn)
+                .ToList();
+
+            var applications = applicationsQuery.Select(a => new ApplicationViewModel
+            {
+                Id = a.Id,
+                ApplicantName = a.User.Name,
+                ApplicantEmail = a.User.Email,
+                Status = a.Status,
+                AppliedOn = a.AppliedOn,
+                ResumeFilePath = a.User.Profile?.ResumeFilePath,
+                ProfileImageUrl = a.User.Profile?.ProfileImageUrl ?? a.User.Profile?.SelectedAvatar,
+                ApplicantId = a.UserId
+            });
+
+            if (!string.IsNullOrEmpty(statusFilter) &&
+                Enum.TryParse<ApplicationStatus>(statusFilter, out var parsedStatus))
+            {
+                applications = applications.Where(a => a.Status == parsedStatus);
+                ViewBag.Status = statusFilter;
+            }
 
             var viewModel = new JobApplicationsViewModel
             {
                 OfferId = offer.OfferId,
                 OfferTitle = offer.Title,
-                Applications = applications.Select(a => new ApplicationViewModel
-                {
-                    Id = a.Id,
-                    ApplicantName = a.User.Name,
-                    ApplicantEmail = a.User.Email,
-                    Status = a.Status,
-                    AppliedOn = a.AppliedOn,
-                    ProfileImageUrl = a.User.Profile?.ProfileImageUrl ?? a.User.Profile?.SelectedAvatar,
-                    ResumeFilePath = a.User.Profile?.ResumeFilePath,
-                    ApplicantId = a.UserId
-                }).ToList()
+                ApplicationsPaged = applications.ToPagedList(page, pageSize)
             };
 
             return View(viewModel);
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> ApproveApplication(int applicationId)

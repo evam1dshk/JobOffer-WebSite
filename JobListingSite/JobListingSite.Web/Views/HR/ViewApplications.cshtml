@@ -1,178 +1,311 @@
-﻿@model JobListingSite.Web.Models.Company.JobApplicationsViewModel
-
+﻿@model JobApplicationsViewModel
 @using JobListingSite.Data.Enums
+@using Microsoft.AspNetCore.Html
+@using X.PagedList
 @using X.PagedList.Mvc.Core
+
 @{
-    ViewData["Title"] = "View Applications";
+    ViewData["Title"] = "Job Applications";
+    var currentStatus = Context.Request.Query["statusFilter"].ToString();
+    string tabUrl(string? status) => Url.Action("ViewApplications", new { offerId = Model.OfferId, statusFilter = status });
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
 <style>
-    .btn-ombre {
+    body {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .card-container {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin: 3rem auto;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        animation: fadeInUp 0.6s ease;
+        max-width: 1200px;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #212529;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .custom-tabs .tab-btn {
+        background: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        border: 2px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.3s ease, transform 0.3s ease;
+    }
+
+    .tab-btn.pending { color: #11998e; }
+    .tab-btn.approved { color: #28a745; }
+    .tab-btn.rejected { color: #f8576c; }
+    .tab-btn.default { color: #185a9d; }
+
+    .tab-btn:hover {
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .tab-btn.pending:hover { background: linear-gradient(to right, #11998e, #38ef7d); }
+    .tab-btn.approved:hover { background: linear-gradient(to right, #28a745, #43cea2); }
+    .tab-btn.rejected:hover { background: linear-gradient(to right, #f8576c, #ff5858); }
+    .tab-btn.default:hover { background: linear-gradient(to right, #36d1dc, #5b86e5); }
+
+    .tab-btn.active {
+        color: white !important;
+        transform: scale(1.05);
+        font-weight: 700;
+    }
+
+    .tab-btn.active.pending { background: linear-gradient(to right, #11998e, #38ef7d); }
+    .tab-btn.active.approved { background: linear-gradient(to right, #28a745, #43cea2); }
+    .tab-btn.active.rejected { background: linear-gradient(to right, #f8576c, #ff5858); }
+    .tab-btn.active.default { background: linear-gradient(to right, #36d1dc, #5b86e5); }
+
+    .table thead {
         background: linear-gradient(to right, #43cea2, #185a9d);
-        border: none;
+        color: white;
+        text-align: center;
+    }
+
+    .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .badge {
+        border-radius: 50px;
+        padding: 10px 18px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .badge-pending {
+        background: linear-gradient(to right, #fceabb, #f8b500);
+        color: #5c4b00;
+    }
+
+    .badge-approved {
+        background: linear-gradient(to right, #28a745, #43cea2);
         color: white;
     }
 
-        .btn-ombre:hover {
-            background: linear-gradient(to right, #185a9d, #43cea2);
-            color: white;
+    .badge-rejected {
+        background: linear-gradient(to right, #f8576c, #ff5858);
+        color: white;
+    }
+
+    .btn-approve, .btn-reject {
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-approve {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+    }
+
+    .btn-approve:hover {
+        background: linear-gradient(to right, #43cea2, #28a745);
+        transform: translateY(-2px) scale(1.05);
+    }
+
+    .btn-reject {
+        background: linear-gradient(to right, #f8576c, #ff5858);
+        color: white;
+    }
+
+    .btn-reject:hover {
+        background: linear-gradient(to right, #ff5858, #f8576c);
+        transform: translateY(-2px) scale(1.05);
+    }
+
+    .btn-back {
+        background: linear-gradient(to right, #28a745, #43cea2);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: linear-gradient(to right, #43cea2, #28a745);
+        transform: translateY(-2px);
+    }
+
+    @@media (max-width: 768px) {
+        .table {
+            display: block;
+            width: 100%;
         }
 
-    .profile-pic {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-        border-radius: 50%;
+        .table thead {
+            display: none;
+        }
+
+            .table tbody {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+
+        .table tbody tr {
+                display: block;
+                width: 90%;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                padding: 1rem;
+                text-align: center;
+                transition: transform 0.3s ease;
+        }
+
+        .table td {
+             display: block;
+        border: none;
+        padding: 0.5rem 0;
+        }
+
+            .table tbody tr:hover {
+                transform: scale(1.01);
+            }
+
+        .btn-approve span,
+        .btn-reject span {
+            display: none;
+        }
     }
 </style>
 
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-success">
-            <i class="bi bi-people-fill me-2"></i> Applications for @Model.OfferTitle
-        </h2>
-        @if (User.IsInRole("HR"))
-        {
-            <a asp-controller="HR" asp-action="Dashboard" class="btn btn-ombre" data-bs-toggle="tooltip" data-bs-placement="top" title="Back to HR Dashboard">
-                <i class="bi bi-arrow-left-circle me-1"></i> Back to Dashboard
-            </a>
-        }
-        else if (User.IsInRole("Company"))
-        {
-            <a asp-controller="Company" asp-action="CompanyManageJobs" class="btn btn-ombre" data-bs-toggle="tooltip" data-bs-placement="top" title="Back to Manage Jobs">
-                <i class="bi bi-arrow-left-circle me-1"></i> Back to Manage Jobs
-            </a>
-        }
-        else
-        {
-            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Back to Home">
-                <i class="bi bi-arrow-left-circle me-1"></i> Back to Home
-            </a>
-        }
+<div class="card-container">
+    <h2><i class="fas fa-briefcase me-2"></i> Applications for <span class="text-success">@Model.OfferTitle</span></h2>
+
+    <div class="custom-tabs mb-4 d-flex gap-2 flex-wrap justify-content-center">
+        <a href="@tabUrl(null)" class="tab-btn default @(string.IsNullOrEmpty(currentStatus) ? "active default" : "")">
+            <i class="fas fa-list me-1"></i> <span class="d-none d-md-inline">All</span>
+        </a>
+        <a href="@tabUrl("Pending")" class="tab-btn pending @(currentStatus == "Pending" ? "active pending" : "")">
+            <i class="fas fa-hourglass-start me-1"></i> <span class="d-none d-md-inline">Pending</span>
+        </a>
+        <a href="@tabUrl("Approved")" class="tab-btn approved @(currentStatus == "Approved" ? "active approved" : "")">
+            <i class="fas fa-check-circle me-1"></i> <span class="d-none d-md-inline">Approved</span>
+        </a>
+        <a href="@tabUrl("Rejected")" class="tab-btn rejected @(currentStatus == "Rejected" ? "active rejected" : "")">
+            <i class="fas fa-times-circle me-1"></i> <span class="d-none d-md-inline">Rejected</span>
+        </a>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success shadow-sm animate__animated animate__fadeInDown" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
-        </div>
-    }
-    @if (TempData["WarningMessage"] != null)
-    {
-        <div class="alert alert-warning shadow-sm animate__animated animate__fadeInDown" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["WarningMessage"]
-        </div>
-    }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger shadow-sm animate__animated animate__fadeInDown" role="alert">
-            <i class="bi bi-x-circle-fill me-2"></i> @TempData["ErrorMessage"]
-        </div>
-    }
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Applicant</th>
+                <th>Email</th>
+                <th>Applied On</th>
+                <th>Status</th>
+                <th>Actions</th>
+                <th>Resume</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var app in Model.ApplicationsPaged)
+            {
+                <tr>
+                    <td data-label="Applicant">@app.ApplicantName</td>
+                    <td data-label="Email">@app.ApplicantEmail</td>
+                    <td data-label="Applied">@app.TimeAgo</td>
+                    <td data-label="Status">@Html.Raw(GetBadgeHtml(app.Status))</td>
+                    <td>
+                        @if (app.Status == ApplicationStatus.Pending)
+                        {
+                            <button type="submit" class="btn btn-approve">
+                                <span class="d-inline d-md-none"><i class="fas fa-check"></i></span>
+                                <span class="d-none d-md-inline">Approve</span>
+                            </button>
 
-    @if (Model.ApplicationsPaged != null && Model.ApplicationsPaged.Any())
-    {
-        <div class="card shadow-sm bg-white rounded p-4">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Applicant</th>
-                        <th>Email</th>
-                        <th>Applied</th>
-                        <th>Status</th>
-                        <th>Resume</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var app in Model.ApplicationsPaged)
-                    {
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    @if (!string.IsNullOrEmpty(app.ProfileImageUrl))
-                                    {
-                                        <img src="@app.ProfileImageUrl" class="profile-pic me-2" alt="Profile Picture" />
-                                    }
-                                    else
-                                    {
-                                        <img src="~/img/default-avatar.png" class="profile-pic me-2" alt="Default Avatar" />
-                                    }
-                                    @app.ApplicantName
-                                </div>
-                            </td>
-                            <td>@app.ApplicantEmail</td>
-                            <td>@app.TimeAgo</td>
-                            <td>
-                                <span class="badge rounded-pill
-                                    @(app.Status == ApplicationStatus.Pending ? "bg-warning text-dark" :
-                                      app.Status == ApplicationStatus.Approved ? "bg-success" :
-                                      "bg-danger")">
-                                    @app.Status
-                                </span>
-                            </td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(app.ResumeFilePath))
-                                {
-                                    <a href="@app.ResumeFilePath" class="btn btn-sm btn-outline-success" target="_blank">
-                                        <i class="bi bi-file-earmark-arrow-down"></i> Download
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No Resume</span>
-                                }
-                            </td>
-                            <td>
-                                @if (app.Status == ApplicationStatus.Pending)
-                                {
-                                    <div class="d-flex gap-2">
-                                        <form asp-action="ApproveApplication" method="post" class="d-inline">
-                                            <input type="hidden" name="id" value="@app.Id" />
-                                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                                        </form>
-                                        <form asp-action="RejectApplication" method="post" class="d-inline">
-                                            <input type="hidden" name="id" value="@app.Id" />
-                                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                                        </form>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <em class="text-muted">No actions</em>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                            <button type="submit" class="btn btn-reject">
+                                <span class="d-inline d-md-none"><i class="fas fa-times"></i></span>
+                                <span class="d-none d-md-inline">Reject</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(app.ResumeFilePath))
+                        {
+                            <a href="@app.ResumeFilePath" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted small">No resume</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-            <div class="d-flex justify-content-center mt-4">
-                @Html.PagedListPager(Model.ApplicationsPaged, page => Url.Action("ViewApplications", new { jobId = Model.OfferId, page }))
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info">
-            No applications found for this job.
-        </div>
-    }
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <a class="btn btn-back" href="@Url.Action("Dashboard", "HR")">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+
+        @Html.PagedListPager(Model.ApplicationsPaged, page =>
+            Url.Action("ViewApplications", new {
+                offerId = Model.OfferId,
+                statusFilter = Context.Request.Query["statusFilter"],
+                page
+            }),
+            new PagedListRenderOptions {
+                UlElementClasses = new[] { "pagination" },
+                LiElementClasses = new[] { "page-item" },
+                PageClasses = new[] { "page-link" },
+                MaximumPageNumbersToDisplay = 5
+            })
+    </div>
 </div>
 
-<script>
-    setTimeout(function () {
-        const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(alert => {
-            alert.classList.add('animate__animated', 'animate__fadeOutUp');
-            setTimeout(() => {
-                alert.remove();
-            }, 1000);
-        });
-    }, 5000);
+@functions {
+    public IHtmlContent GetBadgeHtml(ApplicationStatus status)
+    {
+        var icon = status switch
+        {
+            ApplicationStatus.Pending => "<i class='fas fa-hourglass-half me-1'></i>",
+            ApplicationStatus.Approved => "<i class='fas fa-check-circle me-1'></i>",
+            ApplicationStatus.Rejected => "<i class='fas fa-times-circle me-1'></i>",
+            _ => ""
+        };
 
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
-</script>
+        var badgeClass = status switch
+        {
+            ApplicationStatus.Pending => "badge badge-pending",
+            ApplicationStatus.Approved => "badge badge-approved",
+            ApplicationStatus.Rejected => "badge badge-rejected",
+            _ => "badge bg-secondary text-white"
+        };
+
+        return new HtmlString($"<span class='{badgeClass}'>{icon}</span>");
+    }
+}

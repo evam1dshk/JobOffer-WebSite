@@ -1,9 +1,13 @@
 ﻿@model JobListingSite.Web.Models.HR.HRDashboardViewModel
 @using JobListingSite.Data.Enums
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "HR Dashboard";
 }
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
     body {
@@ -22,11 +26,7 @@
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
         border-left: 8px solid;
-        transition: all 0.3s ease;
     }
 
     .border-greenblue { border-color: #43cea2; }
@@ -41,59 +41,38 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
+    .table thead {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+        color: white;
+    }
+
     .btn-dash {
         font-weight: 600;
         border: none;
         padding: 10px 18px;
         font-size: 0.9rem;
         border-radius: 10px;
-        min-width: 120px;
         transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        justify-content: center;
         gap: 6px;
     }
 
-    .btn-edit {
-        background: linear-gradient(to right, #36d1dc, #5b86e5);
-        color: white;
-    }
+    .btn-edit { background: linear-gradient(to right, #36d1dc, #5b86e5); color: white; }
+    .btn-edit:hover { background: linear-gradient(to right, #5b86e5, #36d1dc); box-shadow: 0 0 12px rgba(91, 134, 229, 0.6); }
 
-    .btn-edit:hover {
-        background: linear-gradient(to right, #5b86e5, #36d1dc);
-        box-shadow: 0 0 12px rgba(91, 134, 229, 0.6);
-    }
+    .btn-delete { background: linear-gradient(to right, #f8576c, #ff5858); color: white; }
+    .btn-delete:hover { background: linear-gradient(to right, #ff5858, #f8576c); box-shadow: 0 0 12px rgba(255, 88, 88, 0.6); }
 
-    .btn-delete {
-        background: linear-gradient(to right, #f8576c, #ff5858);
-        color: white;
-    }
+    .btn-view { background: linear-gradient(to right, #28a745, #43cea2); color: white; }
+    .btn-view:hover { background: linear-gradient(to right, #43cea2, #28a745); box-shadow: 0 0 12px rgba(40, 167, 69, 0.6); }
 
-    .btn-delete:hover {
-        background: linear-gradient(to right, #ff5858, #f8576c);
-        box-shadow: 0 0 12px rgba(255, 88, 88, 0.6);
-    }
-
-    .btn-view {
+    .btn-search, .btn-clear {
         background: linear-gradient(to right, #28a745, #43cea2);
         color: white;
     }
 
-    .btn-view:hover {
-        background: linear-gradient(to right, #43cea2, #28a745);
-        box-shadow: 0 0 12px rgba(40, 167, 69, 0.6);
-    }
-
-    .btn-search {
-        background: linear-gradient(to right, #28a745, #43cea2);
-        color: white;
-    }
-
-    .btn-clear {
-        background: linear-gradient(to right, #6c757d, #495057);
-        color: white;
-    }
+    .btn-clear { background: linear-gradient(to right, #6c757d, #495057); }
 
     .btn-clear:hover, .btn-search:hover {
         box-shadow: 0 0 12px rgba(0,0,0,0.2);
@@ -102,66 +81,77 @@
 
     .btn-text { display: inline; }
 
-@@media (max-width: 576px) {
-    .container-custom {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
+    @@media (max-width: 768px) {
+        .btn-text { display: none; }
 
-    .btn-dash {
-        width: 100%;
-        max-width: 300px;
-        margin: 6px auto;
-    }
+        .table thead { display: none; }
 
-    .btn-group {
-        flex-direction: column;
-        align-items: center;
-    }
+        .table tbody {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
 
-    .form-control {
-        text-align: center;
-    }
+        .table tbody tr {
+            display: block;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 1rem;
+            width: 95%;
+            margin: 0 auto;
+            transition: 0.3s ease;
+        }
 
-    .table th, .table td {
-        text-align: center !important;
-    }
+        .table tbody td {
+            display: block;
+            text-align: center;
+            border: none;
+            padding: 0.5rem 0;
+        }
 
-    .table {
-        width: 100%;
-        overflow-x: auto;
-        display: block;
-    }
-}
+        .table tbody td::before {
+            content: attr(data-label);
+            display: block;
+            font-weight: bold;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
 
+        .table td:last-child {
+            margin-top: 1rem;
+        }
+    }
 </style>
 
 <div class="container-custom my-5">
     <div class="card bg-white shadow-sm border-0 mb-5">
         <div class="card-body p-4">
-            <h2 class="mb-3 text-success"><i class="bi bi-bar-chart-line-fill me-2 text-success"></i> HR Dashboard</h2>
-            <p class="text-muted mb-4">Quick overview of jobs and application status</p>
-
+            <h2 class="mb-3 text-success"><i class="bi bi-bar-chart-line-fill me-2"></i> HR Dashboard</h2>
             <div class="row g-4">
-                <div class="col-md-3"><div class="stat-card border-greenblue"><h6 class="text-muted"><i class="bi bi-briefcase-fill me-2 text-success"></i>Total Jobs</h6><h4 class="fw-bold text-dark counter" data-target="@Model.TotalJobs">0</h4></div></div>
-                <div class="col-md-3"><div class="stat-card border-lightblue"><h6 class="text-muted"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Total Applications</h6><h4 class="fw-bold text-dark counter" data-target="@Model.TotalApplications">0</h4></div></div>
-                <div class="col-md-3"><div class="stat-card border-orange"><h6 class="text-muted"><i class="bi bi-hourglass-split me-2 text-warning"></i>Pending</h6><h4 class="fw-bold text-dark counter" data-target="@Model.PendingApplications">0</h4></div></div>
-                <div class="col-md-3"><div class="stat-card border-coralred"><h6 class="text-muted"><i class="bi bi-x-circle-fill me-2 text-danger"></i>Rejected</h6><h4 class="fw-bold text-dark counter" data-target="@Model.RejectedApplications">0</h4></div></div>
+                <div class="col-md-3"><div class="stat-card border-greenblue"><h6>Total Jobs</h6><h4 class="fw-bold counter" data-target="@Model.TotalJobs">0</h4></div></div>
+                <div class="col-md-3"><div class="stat-card border-lightblue"><h6>Total Applications</h6><h4 class="fw-bold counter" data-target="@Model.TotalApplications">0</h4></div></div>
+                <div class="col-md-3"><div class="stat-card border-orange"><h6>Pending</h6><h4 class="fw-bold counter" data-target="@Model.PendingApplications">0</h4></div></div>
+                <div class="col-md-3"><div class="stat-card border-coralred"><h6>Rejected</h6><h4 class="fw-bold counter" data-target="@Model.RejectedApplications">0</h4></div></div>
             </div>
         </div>
     </div>
 
     <div class="table-card">
-        <h4 class="mb-4 text-center">Recent Job Offers</h4>
+        <h4 class="text-center mb-4">Recent Job Offers</h4>
 
-        <form method="get" asp-action="Dashboard" class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-2 mb-4">
-            <input type="text" name="search" class="form-control w-100 w-sm-auto" placeholder="Search jobs..." value="@Model.SearchQuery" />
-            <button type="submit" class="btn-dash btn-search"><i class="fas fa-search"></i><span class="btn-text"> Search</span></button>
-            <a href="@Url.Action("Dashboard")" class="btn-dash btn-clear"><i class="fas fa-sync-alt"></i><span class="btn-text"> Clear</span></a>
+        <form method="get" asp-action="Dashboard" class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2 mb-4">
+            <input type="text" name="search" class="form-control" placeholder="Search jobs..." value="@Model.SearchQuery" />
+            <button type="submit" class="btn-dash btn-search">
+                <i class="fas fa-search"></i><span class="btn-text"> Search</span>
+            </button>
+            <a href="@Url.Action("Dashboard")" class="btn-dash btn-clear">
+                <i class="fas fa-sync-alt"></i><span class="btn-text"> Clear</span>
+            </a>
         </form>
 
-        <table class="table table-hover align-middle text-center text-md-start">
-            <thead class="table-light">
+        <table class="table align-middle text-md-start text-center">
+            <thead>
                 <tr>
                     <th>Title</th>
                     <th>Category</th>
@@ -173,31 +163,20 @@
                 @foreach (var offer in Model.RecentOffers)
                 {
                     <tr>
-                        <td>@offer.Title</td>
-                        <td>@offer.Category?.Name</td>
-                        <td>@offer.CreatedAt.ToShortDateString()</td>
-                        <td>
+                        <td data-label="Title">@offer.Title</td>
+                        <td data-label="Category">@offer.Category?.Name</td>
+                        <td data-label="Posted">@offer.CreatedAt.ToShortDateString()</td>
+                        <td data-label="Actions">
                             <div class="d-flex flex-wrap justify-content-center gap-2">
-                                <a asp-action="EditJob" asp-route-id="@offer.OfferId" class="btn-dash btn-edit"><i class="bi bi-pencil-fill"></i><span class="btn-text">Edit</span></a>
-                                <button type="button" class="btn-dash btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal-@offer.OfferId"><i class="bi bi-trash-fill"></i><span class="btn-text">Delete</span></button>
-                                <a asp-action="ViewApplications" asp-route-offerId="@offer.OfferId" class="btn-dash btn-view"><i class="bi bi-eye-fill"></i><span class="btn-text">View</span></a>
-                            </div>
-
-                            <!-- Modal -->
-                            <div class="modal fade" id="deleteModal-@offer.OfferId" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Confirm Deletion</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">Are you sure you want to delete: <strong>@offer.Title</strong>?</div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            <a asp-action="DeleteJob" asp-route-id="@offer.OfferId" class="btn btn-danger">Delete</a>
-                                        </div>
-                                    </div>
-                                </div>
+                                <a asp-action="EditJob" asp-route-id="@offer.OfferId" class="btn-dash btn-edit">
+                                    <i class="bi bi-pencil-fill"></i><span class="btn-text">Edit</span>
+                                </a>
+                                <button type="button" class="btn-dash btn-delete delete-btn" data-id="@offer.OfferId">
+                                    <i class="bi bi-trash-fill"></i><span class="btn-text">Delete</span>
+                                </button>
+                                <a asp-action="ViewApplications" asp-route-offerId="@offer.OfferId" class="btn-dash btn-view">
+                                    <i class="bi bi-eye-fill"></i><span class="btn-text">View</span>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -220,19 +199,36 @@
 
 @section Scripts {
     <script>
+        // Animated counters
         document.querySelectorAll('.counter').forEach(counter => {
-            const updateCount = () => {
-                const target = +counter.getAttribute('data-target');
-                const count = +counter.innerText;
-                const increment = Math.ceil(target / 30);
-                if (count < target) {
-                    counter.innerText = count + increment;
-                    setTimeout(updateCount, 20);
-                } else {
-                    counter.innerText = target;
-                }
+            const target = +counter.getAttribute('data-target');
+            let count = 0;
+            const step = Math.ceil(target / 30);
+            const update = () => {
+                count += step;
+                counter.textContent = count >= target ? target : count;
+                if (count < target) setTimeout(update, 20);
             };
-            updateCount();
+            update();
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const jobId = this.getAttribute('data-id');
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This job will be deleted.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f8576c',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = `/HR/DeleteJob/${jobId}`;
+                    }
+                });
+            });
         });
     </script>
 }
