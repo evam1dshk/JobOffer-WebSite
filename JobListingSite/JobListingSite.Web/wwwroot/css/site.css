@@ -50,13 +50,20 @@
 }
 
 body {
-    color: #777777;
-    font-family: "Poppins", sans-serif;
-    font-size: 14px;
-    font-weight: 300;
-    line-height: 1.625em;
-    position: relative;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #333;
+    background: #f9f9f9;
 }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: inherit;
+    font-weight: 600;
+    color: #222;
+}
+
 
 ol, ul {
     margin: 0;
@@ -1891,17 +1898,18 @@ h1, h2, h3, h4, h5, h6 {
 # Header
 --------------------------------------------------------------*/
 #header {
-    padding: 14px 0;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     position: fixed;
     left: 0;
     top: 0;
     right: 0;
-    transition: all 0.5s;
+    padding: 14px 0;
     z-index: 997;
+    transition: all 0.5s;
 }
 
     #header.header-scrolled {
-        background: rgba(0, 0, 0, 0.8);
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
         transition: all 0.5s;
     }
 
@@ -1963,11 +1971,26 @@ h1, h2, h3, h4, h5, h6 {
 # Navigation Menu
 --------------------------------------------------------------*/
 /* Nav Menu Essentials */
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.3s, text-shadow 0.3s;
+}
+
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-dark .navbar-nav .nav-link:focus {
+        color: #ffffff;
+        text-shadow: 0 0 10px #43cea2, 0 0 20px #43cea2, 0 0 30px #43cea2;
+    }
+
 .nav-menu, .nav-menu * {
     margin: 0;
     padding: 0;
     list-style: none;
 }
+
+    .nav-menu a:hover {
+        color: #43cea2; 
+    }
 
     .nav-menu ul {
         position: absolute;
@@ -4191,12 +4214,45 @@ input[type="text"]:focus {
     border-color: #28a745;
 }
 
-.dropdown-menu .dropdown-item:hover,
-.dropdown-menu .dropdown-item:focus {
-    background: linear-gradient(to right, #28a745, #43cea2) !important;
-    color: white !important;
+.dropdown-menu {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px 0;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+    animation: fadeInDropdown 0.3s ease;
 }
 
+    .dropdown-menu a.dropdown-item {
+        color: #333;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: background 0.3s, color 0.3s;
+    }
+
+        .dropdown-menu a.dropdown-item i {
+            transition: color 0.3s;
+        }
+
+        .dropdown-menu a.dropdown-item:hover {
+            background-color: #e6f7f3; /* light greenish background on hover */
+            color: #28a745; 
+        }
+
+            .dropdown-menu a.dropdown-item:hover i {
+                color: #28a745; 
+            }
+
+@keyframes fadeInDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 
 /*

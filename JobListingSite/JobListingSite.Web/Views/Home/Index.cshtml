@@ -1,136 +1,180 @@
-﻿@{
+﻿@model JobListingSite.Web.Models.Home.HomeViewModel
+@{
     ViewData["Title"] = "Welcome";
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+}
 
-<style>
-    body {
-        background: linear-gradient(to bottom right, #43cea2, #185a9d);
-        color: #fff;
-        font-family: 'Segoe UI', sans-serif;
-    }
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #43cea2, #185a9d);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-    .hero {
-        padding: 100px 0;
-        text-align: center;
-        animation: fadeIn 0.6s ease;
-    }
+        .hero {
+            padding: 100px 0;
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
 
-    .hero h1 {
-        font-size: 3rem;
-        font-weight: 700;
-    }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+        }
 
-    .hero p {
-        font-size: 1.2rem;
-        margin-top: 10px;
-        color: #e2f6f0;
-    }
+        .hero p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            color: #e2f6f0;
+        }
 
-    .btn-green {
-        background: #28a745;
-        border: none;
-        color: white;
-        padding: 10px 25px;
-        font-size: 1.1rem;
-        border-radius: 50px;
-        transition: background 0.3s ease;
-    }
+        .btn-ombre {
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            transition: background 0.4s ease, transform 0.3s ease;
+        }
 
-    .btn-green:hover {
-        background: #218838;
-    }
+        .btn-ombre:hover {
+            background: linear-gradient(135deg, #185a9d, #43cea2);
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            color: #fff;
+        }
 
-    .search-bar {
-        max-width: 600px;
-        margin: 20px auto;
-        padding: 10px;
-        background: white;
-        border-radius: 50px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        display: flex;
-    }
+        .btn-dark-ombre {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            transition: background 0.4s ease, transform 0.3s ease;
+        }
 
-    .search-bar input {
-        border: none;
-        border-radius: 50px 0 0 50px;
-        padding: 10px 20px;
-        width: 100%;
-        outline: none;
-    }
+        .btn-dark-ombre:hover {
+            background: linear-gradient(135deg, #2c5364, #203a43, #0f2027);
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
 
-    .search-bar button {
-        border: none;
-        border-radius: 0 50px 50px 0;
-        padding: 0 20px;
-        background: #28a745;
-        color: white;
-    }
+        .btn-ombre-sm {
+            padding: 6px 20px;
+            font-size: 0.9rem;
+            border-radius: 30px;
+        }
 
-    .featured-jobs {
-        padding: 60px 0;
-        background-color: rgba(255, 255, 255, 0.1);
-    }
+        .search-btn-ombre {
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            border: none;
+            color: white;
+            border-radius: 0 50px 50px 0;
+            padding: 0 20px;
+            transition: background 0.4s ease, transform 0.3s ease;
+        }
 
-    .job-card {
-        background-color: white;
-        color: #333;
-        padding: 20px;
-        border-radius: 10px;
-        transition: transform 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
+        .search-btn-ombre:hover {
+            background: linear-gradient(135deg, #185a9d, #43cea2);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            color: #fff;
+        }
 
-    .job-card:hover {
-        transform: translateY(-5px);
-    }
+        .search-bar {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+        }
 
-    @@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
+        .search-bar input {
+            border: none;
+            border-radius: 50px 0 0 50px;
+            padding: 10px 20px;
+            width: 100%;
+            outline: none;
+        }
 
-<div class="hero">
-    <h1>🚀 Find Your Dream Job</h1>
-    <p>Explore thousands of job offers from top companies in tech, marketing, and more.</p>
+               .featured-jobs {
+            padding: 60px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
 
-    <div class="search-bar mt-4">
-        <input type="text" placeholder="Search by title, category..." />
-        <button><i class="fas fa-search"></i></button>
+        .job-card {
+            background: #fff;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .job-card:hover {
+            transform: translateY(-5px);
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <div class="hero">
+        <h1 class="animate__animated animate__fadeInDown">Find Your Dream Job</h1>
+        <p class="animate__animated animate__fadeInUp">Explore thousands of job offers from top companies worldwide.</p>
+
+        <form method="get" asp-controller="Job" asp-action="Browse" class="search-bar mt-4">
+            <input type="text" name="searchTerm" placeholder="Search jobs..." />
+            <button type="submit" class="search-btn-ombre">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+
+        <a asp-controller="Job" asp-action="Browse" class="btn btn-dark-ombre mt-3 animate__animated animate__fadeIn">
+            <i class="fas fa-briefcase"></i> Browse Jobs
+        </a>
     </div>
 
-    <a asp-controller="Job" asp-action="Browse" class="btn btn-green mt-3">
-        <i class="fas fa-briefcase"></i> Browse Jobs
-    </a>
-</div>
-
-<!-- 🧩 Featured Job Listings -->
-<div class="featured-jobs container text-dark">
-    <h2 class="text-center mb-5">🔥 Featured Jobs</h2>
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="job-card">
-                <h5><i class="fas fa-laptop-code me-2 text-primary"></i>Frontend Developer</h5>
-                <p>Join a cutting-edge startup building the next big thing.</p>
-                <a class="btn btn-sm btn-outline-primary" href="#">Apply Now</a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="job-card">
-                <h5><i class="fas fa-chart-line me-2 text-success"></i>Marketing Specialist</h5>
-                <p>Help grow brands with data-driven campaigns and innovation.</p>
-                <a class="btn btn-sm btn-outline-success" href="#">Apply Now</a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="job-card">
-                <h5><i class="fas fa-database me-2 text-warning"></i>Data Analyst</h5>
-                <p>Analyze key metrics and support strategic decisions with insights.</p>
-                <a class="btn btn-sm btn-outline-warning" href="#">Apply Now</a>
-            </div>
-        </div>
+    <!-- Featured Jobs -->
+    <div class="featured-jobs container text-dark">
+        <h2 class="text-center fw-bold mb-5">Featured Jobs</h2>
+        <div class="row g-4">
+        @if (Model.FeaturedJobs != null && Model.FeaturedJobs.Any())
+        {
+            @foreach (var job in Model.FeaturedJobs)
+            {
+                <div class="col-md-4">
+                    <div class="job-card h-100">
+                        <h5 class="fw-bold">@job.Title</h5>
+                        <p class="mb-1"><i class="fas fa-building me-1"></i> @job.CompanyName</p>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt me-1"></i> @job.Location</p>
+                        <a asp-controller="Job" asp-action="Details" asp-route-id="@job.Id" class="btn btn-ombre btn-ombre-sm">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-center text-light">No featured jobs available at the moment.</p>
+        }
     </div>
 </div>

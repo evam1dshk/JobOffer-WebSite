@@ -25,6 +25,7 @@ namespace JobListingSite.Web.Controllers
             _userManager = userManager;
             _emailSender = emailSender;
         }
+
         [AllowAnonymous]
         public IActionResult Browse(string searchTerm, int? categoryId, int page = 1)
         {

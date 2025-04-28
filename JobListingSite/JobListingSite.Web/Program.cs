@@ -56,7 +56,6 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// ✅ Seed roles/admin user/categories/offers
 using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 {
     var services = scope.ServiceProvider;

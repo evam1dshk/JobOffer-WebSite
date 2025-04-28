@@ -1,52 +1,47 @@
-﻿<html lang="en">
+﻿@using Microsoft.AspNetCore.Identity
 @using JobListingSite.Data.Entities
-@using Microsoft.AspNetCore.Identity
-
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - JobListingSite</title>
 
-    <!-- Bootstrap & Template CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/bootstrap.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="~/css/linearicons.css" />
-    <link rel="stylesheet" href="~/css/magnific-popup.css" />
-    <link rel="stylesheet" href="~/css/main.css" />
-    <link rel="stylesheet" href="~/css/nice-select.css" />
-    <link rel="stylesheet" href="~/css/owl.carousel.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @RenderSection("Styles", required: false)
 </head>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<body>
-    <header id="header">
-        <div class="container">
-            <div class="row align-items-center justify-content-between d-flex">
-                <div id="logo">
-                    <a asp-controller="Home" asp-action="Index">
-                        <img src="~/img/logo.png" alt="JobListingSite Logo" />
-                    </a>
-                </div>
-                <nav id="nav-menu-container">
-                    <ul class="nav-menu">
-                        <li class="menu-active"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li><a asp-controller="Home" asp-action="About">About Us</a></li>
-                        <li><a asp-controller="Category" asp-action="Index">Categories</a></li>
-                        <li><a asp-controller="Pricing" asp-action="Index">Pricing</a></li>
-                        <li><a asp-controller="Blog" asp-action="Index">Blog</a></li>
-                        <li><a asp-controller="Contact" asp-action="Index">Contact</a></li>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); box-shadow: 0 2px 10px rgba(0,0,0,0.6);">
+            <div class="container">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-briefcase"></i> JobListingSite
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Job" asp-action="Browse">Browse Jobs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="About">About Us</a>
+                        </li>
 
                         @if (SignInManager.IsSignedIn(User))
                         {
@@ -57,55 +52,42 @@
                             var isAdmin = User.IsInRole("Admin");
 
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle fw-semibold text-success" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-user-circle me-1"></i> Hello, @User.Identity?.Name!
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle"></i> Hello, @User.Identity?.Name!
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <ul class="dropdown-menu dropdown-menu-end">
                                     @if (isAdmin)
                                     {
-                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard"><i class="fas fa-tools me-2"></i> Admin Dashboard</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a></li>
                                         <li><hr class="dropdown-divider" /></li>
                                     }
-
                                     else if (isHR)
                                     {
-                                        <li><a class="dropdown-item" asp-controller="HR" asp-action="Dashboard"><i class="fas fa-chart-line me-2"></i> HR Dashboard</a></li>
+                                        <li><a class="dropdown-item" asp-controller="HR" asp-action="Dashboard">HR Dashboard</a></li>
                                         <li><hr class="dropdown-divider" /></li>
                                     }
-
                                     else if (isCompany)
                                     {
-                                        <li><a class="dropdown-item" asp-controller="Company" asp-action="ManageJobs"><i class="fas fa-briefcase me-2"></i> Manage Jobs</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Company" asp-action="ManageProfile"><i class="fas fa-building me-2"></i> Manage Profile</a></li>
-                                        <li>
-                                            <a class="dropdown-item d-flex justify-content-between align-items-center" asp-controller="Company" asp-action="ViewEditRequests">
-                                                <span><i class="fas fa-edit me-2"></i> Edit Requests</span>
-                                               @if (ViewBag.EditRequestCount != null && (int)ViewBag.EditRequestCount > 0)
-                                                {
-                                                 <span class="badge bg-danger rounded-pill">@ViewBag.EditRequestCount</span>
-                                                }
-                                            </a>
-                                        </li>
+                                        <li><a class="dropdown-item" asp-controller="Company" asp-action="ManageJobs">Manage Jobs</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Company" asp-action="ManageProfile">Manage Profile</a></li>
                                         <li><hr class="dropdown-divider" /></li>
                                     }
                                     else
                                     {
-                                        <li><a class="dropdown-item" asp-controller="LoggedUser" asp-action="ManageProfile"><i class="fas fa-user-circle me-2"></i> Manage Profile</a></li>
-                                        <li><a class="dropdown-item" asp-controller="LoggedUser" asp-action="MyApplications"><i class="fas fa-list me-2"></i> My Applications</a></li>
+                                        <li><a class="dropdown-item" asp-controller="LoggedUser" asp-action="ManageProfile">Manage Profile</a></li>
+                                        <li><a class="dropdown-item" asp-controller="LoggedUser" asp-action="MyApplications">My Applications</a></li>
                                         <li><hr class="dropdown-divider" /></li>
                                     }
 
-                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-cog me-2"></i> Account Settings</a></li>
-                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Email"><i class="fas fa-envelope me-2"></i> Change Email</a></li>
-                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword"><i class="fas fa-key me-2"></i> Change Password</a></li>
-                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/TwoFactorAuthentication"><i class="fas fa-shield-alt me-2"></i> Two-Factor Auth</a></li>
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Account Settings</a></li>
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Email">Change Email</a></li>
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">Change Password</a></li>
+                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/TwoFactorAuthentication">Two-Factor Auth</a></li>
                                     <li><hr class="dropdown-divider" /></li>
 
                                     <li>
-                                        <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
-                                            <button type="button" id="logoutButton" class="dropdown-item">
-                                                <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                            </button>
+                                        <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" method="post">
+                                            <button type="submit" class="dropdown-item">Logout</button>
                                         </form>
                                     </li>
                                 </ul>
@@ -113,156 +95,99 @@
                         }
                         else
                         {
-                            <li><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a></li>
-                            <li><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                            </li>
                         }
                     </ul>
-                </nav>
+                </div>
             </div>
-        </div>
+        </nav>
     </header>
 
-    <div class="container flex-grow-1 my-5">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+    <!-- Main -->
+    <div class="container my-5 flex-grow-1">
+        @RenderBody()
     </div>
 
-    <footer class="footer-area section-gap">
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4 mt-auto">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-12">
-                    <div class="single-footer-widget">
-                        <h6>Top Products</h6>
-                        <ul class="footer-nav">
-                            <li><a href="#">Managed Website</a></li>
-                            <li><a href="#">Manage Reputation</a></li>
-                            <li><a href="#">Power Tools</a></li>
-                            <li><a href="#">Marketing Service</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-md-12">
-                    <div class="single-footer-widget newsletter">
-                        <h6>Newsletter</h6>
-                        <p>Subscribe for updates and job alerts.</p>
-                        <form class="form-inline">
-                            <div class="form-group row w-100">
-                                <div class="col-lg-8 col-md-12">
-                                    <input type="email" placeholder="Enter Email" required class="form-control">
-                                </div>
-                                <div class="col-lg-4 col-md-12">
-                                    <button class="nw-btn primary-btn">Subscribe</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-12">
-                    <div class="single-footer-widget mail-chimp">
-                        <h6 class="mb-20">Follow Us</h6>
-                        <div class="footer-social">
-                            <a href="#"><i class="fa fa-facebook"></i></a>
-                            <a href="#"><i class="fa fa-twitter"></i></a>
-                            <a href="#"><i class="fa fa-linkedin"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row footer-bottom d-flex justify-content-between">
-                <p class="col-lg-8 col-sm-12 footer-text m-0 text-white">
-                    Copyright &copy;<script>document.write(new Date().getFullYear());</script>
-                    All rights reserved | Built for JobListingSite
-                </p>
-            </div>
+            <small>© @DateTime.Now.Year JobListingSite. All rights reserved.</small>
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/jquery.validate.unobtrusive.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/main.js"></script>
-    <script src="~/js/easing.min.js"></script>
-    <script src="~/js/hoverIntent.js"></script>
-    <script src="~/js/jquery.ajaxchimp.min.js"></script>
-    <script src="~/js/jquery.nice-select.min.js"></script>
-    <script src="~/js/jquery.sticky.js"></script>
-    <script src="~/js/jquery.magnific-popup.min.js"></script>
-    <script src="~/js/mail-script.js"></script>
-    <script src="~/js/owl.carousel.min.js"></script>
-    <script src="~/js/parallax.min.js"></script>
-    <script src="~/js/slick.js"></script>
-    <script src="~/js/superfish.js"></script>
-
-
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const logoutButton = document.getElementById('logoutButton');
-            const logoutForm = document.getElementById('logoutForm');
-
-            if (logoutButton && logoutForm) {
-                logoutButton.addEventListener('click', function () {
-                    Swal.fire({
-                        title: 'Are you sure you want to log out?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#28a745',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, Logout',
-                        cancelButtonText: 'Cancel',
-                        backdrop: true
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            logoutForm.submit();
-                        }
-                    });
-                });
-            }
-
-            const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"] ?? ""));
-            const warningMessage = @Html.Raw(Json.Serialize(TempData["WarningMessage"] ?? ""));
-            const errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"] ?? ""));
-
-            if (successMessage && successMessage.trim() !== "") {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: successMessage,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            } else if (warningMessage && warningMessage.trim() !== "") {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Warning!',
-                    text: warningMessage,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            } else if (errorMessage && errorMessage.trim() !== "") {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: errorMessage,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            }
-        });
-    </script>
 </body>
 </html>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const logoutButton = document.getElementById('logoutButton');
+        const logoutForm = document.getElementById('logoutForm');
+
+        if (logoutButton && logoutForm) {
+            logoutButton.addEventListener('click', function () {
+                Swal.fire({
+                    title: 'Are you sure you want to log out?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Logout',
+                    cancelButtonText: 'Cancel',
+                    backdrop: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        logoutForm.submit();
+                    }
+                });
+            });
+        }
+
+        const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"] ?? ""));
+        const warningMessage = @Html.Raw(Json.Serialize(TempData["WarningMessage"] ?? ""));
+        const errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"] ?? ""));
+
+        if (successMessage && successMessage.trim() !== "") {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: successMessage,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        } else if (warningMessage && warningMessage.trim() !== "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: warningMessage,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        } else if (errorMessage && errorMessage.trim() !== "") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: errorMessage,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+    });
+</script>
