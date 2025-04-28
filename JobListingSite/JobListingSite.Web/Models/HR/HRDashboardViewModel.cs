@@ -1,4 +1,5 @@
 ﻿using JobListingSite.Data.Entities;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using X.PagedList;
 
 namespace JobListingSite.Web.Models.HR
@@ -16,5 +17,8 @@ namespace JobListingSite.Web.Models.HR
         public string? SearchQuery { get; set; }
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
+        public List<SelectListItem>? AllCategories { get; set; }
+
+        public int? SelectedCategoryId { get; set; }
     }
 }

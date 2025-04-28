@@ -17,7 +17,8 @@ namespace JobListingSite.Web.Data
         public DbSet<Profile> Profiles { get; set; } = null!;
         public DbSet<JobApplication> JobApplications { get; set; } = null!;
         public DbSet<CompanyProfile> CompanyProfiles { get; set; } = null!;
-        public DbSet<JobEditRequest> JobEditRequests { get; set; }
+        public DbSet<HRTicket> HRTickets { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,13 +29,16 @@ namespace JobListingSite.Web.Data
             new IdentityRole { Id = "4", Name = "Company", NormalizedName = "COMPANY" }
            );
 
-            // Offer → Category (One-to-Many)
+            modelBuilder.Entity<Offer>()
+                .Property(o => o.Salary)
+                .HasPrecision(18, 2);
+
+
             modelBuilder.Entity<Offer>()
                 .HasOne(o => o.Category)
                 .WithMany(c => c.Offers)
                 .HasForeignKey(o => o.CategoryId);
 
-            // Offer → Company (User) (One-to-Many)
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Offers)
                 .WithOne(o => o.Company)

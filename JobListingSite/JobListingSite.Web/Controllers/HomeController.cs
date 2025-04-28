@@ -21,29 +21,6 @@ namespace JobListingSite.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            if (User.Identity.IsAuthenticated)
-            {
-                var userId = _userManager.GetUserId(User);
-                var currentUser = await _userManager.FindByIdAsync(userId);
-
-                if (currentUser != null && currentUser.IsCompany)
-                {
-                    var editRequestCount = await _context.JobEditRequests
-                        .Include(r => r.Offer)
-                        .CountAsync(r => r.Offer.CompanyId == currentUser.Id);
-
-                    ViewBag.EditRequestCount = editRequestCount;
-                }
-                else
-                {
-                    ViewBag.EditRequestCount = 0;
-                }
-            }
-            else
-            {
-                ViewBag.EditRequestCount = 0;
-            }
-
             return View();
         }
     

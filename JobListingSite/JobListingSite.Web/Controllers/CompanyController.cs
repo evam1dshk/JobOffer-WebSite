@@ -34,52 +34,6 @@ namespace JobListingSite.Web.Controllers
             _emailSender = emailSender;
         }
 
-        [Authorize(Roles = "Company")]
-        public async Task<IActionResult> ViewEditRequests()
-        {
-            var companyId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            var requests = await _context.JobEditRequests
-                .Include(r => r.Offer)
-                .Where(r => r.Offer.CompanyId == companyId)
-                .OrderByDescending(r => r.RequestedAt)
-                .ToListAsync();
-
-            return View(requests);
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Company")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkRequestHandled(int requestId)
-        {
-            var request = await _context.JobEditRequests
-                .Include(r => r.Offer)
-                .ThenInclude(o => o.Company)
-                .ThenInclude(c => c.CompanyProfile)
-                .FirstOrDefaultAsync(r => r.Id == requestId);
-
-            if (request == null)
-                return NotFound();
-
-            var companyEmail = request.Offer.Company?.CompanyProfile?.ContactEmail;
-            var offerTitle = request.Offer.Title;
-
-            _context.JobEditRequests.Remove(request);
-            await _context.SaveChangesAsync();
-
-            if (!string.IsNullOrEmpty(companyEmail))
-            {
-                await _emailSender.SendEmailAsync(
-                    companyEmail,
-                    "Edit Request Handled",
-                    $"Your edit request for the job <strong>{offerTitle}</strong> has been processed."
-                );
-            }
-
-            TempData["SuccessMessage"] = "Edit request marked as handled successfully!";
-            return RedirectToAction("ViewEditRequests");
-        }
 
         private async Task<string> UploadLogoLocallyAsync(IFormFile logo)
         {
@@ -89,7 +43,7 @@ namespace JobListingSite.Web.Controllers
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/logos");
 
             if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder); // ✅ Create the folder if it doesn't exist
+                Directory.CreateDirectory(uploadsFolder); 
 
             var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(logo.FileName);
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -282,7 +236,7 @@ namespace JobListingSite.Web.Controllers
                 }).ToList()
             };
 
-            return View("AddJob", model); // Reuse AddJob view
+            return View("AddJob", model); 
         }
 
         [HttpPost]

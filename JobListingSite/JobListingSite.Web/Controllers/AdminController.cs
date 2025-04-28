@@ -10,6 +10,8 @@ using X.PagedList.Extensions;
 using X.PagedList;
 using JobListingSite.Web.Models.JobListing;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authentication;
+using JobListingSite.Data.Enums;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -132,7 +134,7 @@ namespace JobListingSite.Web.Controllers
                     Role = "Company",
                     Industry = u.CompanyProfile.Industry,
                     IsLockedOut = u.LockoutEnd.HasValue && u.LockoutEnd > DateTime.UtcNow,
-                     CompanyProfileId = u.CompanyProfile.Id
+                    CompanyProfileId = u.CompanyProfile.Id
                 })
                 .OrderBy(u => u.UserName)
                 .ToListAsync();
@@ -311,6 +313,14 @@ namespace JobListingSite.Web.Controllers
             await _userManager.AddToRoleAsync(user, model.NewRole);
 
             TempData["SuccessMessage"] = $"Role changed to {model.NewRole} successfully!";
+
+            if (user.Id == _userManager.GetUserId(User))
+            {
+                await _userManager.UpdateSecurityStampAsync(user);
+                await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+                return RedirectToAction("Login", "Account");
+            }
+
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -377,7 +387,7 @@ namespace JobListingSite.Web.Controllers
                 return RedirectToAction(nameof(ViewCompanies));
             }
 
-            return View(company); 
+            return View(company);
         }
 
         [Authorize(Roles = "Admin")]
@@ -529,7 +539,6 @@ namespace JobListingSite.Web.Controllers
                 return RedirectToAction(nameof(ManageCompanies));
             }
 
-            // ✅ Update only the editable fields
             company.CompanyName = model.CompanyName;
             company.Description = model.Description;
             company.Industry = model.Industry;
@@ -547,9 +556,55 @@ namespace JobListingSite.Web.Controllers
             return RedirectToAction(nameof(ManageCompanies));
         }
 
-        public IActionResult ViewEditRequests()
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult ViewTickets(int page = 1)
         {
-            return View();
+            int pageSize = 5;
+            var tickets =  _context.HRTickets
+                .Include(t => t.CreatedBy)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToPagedList(page, pageSize);
+
+            return View(tickets);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResolveTicket(int id)
+        {
+            var ticket = await _context.HRTickets.FindAsync(id);
+            if (ticket == null)
+            {
+                TempData["ErrorMessage"] = "Ticket not found.";
+                return RedirectToAction(nameof(ViewTickets));
+            }
+
+            ticket.Status = TicketStatus.Resolved;
+            ticket.ResolvedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Ticket resolved successfully!";
+            return RedirectToAction(nameof(ViewTickets));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteTicketAdmin(int id)
+        {
+            var ticket = await _context.HRTickets.FindAsync(id);
+            if (ticket == null)
+            {
+                TempData["ErrorMessage"] = "Ticket not found.";
+                return RedirectToAction(nameof(ViewTickets));
+            }
+
+            _context.HRTickets.Remove(ticket);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Ticket deleted successfully.";
+            return RedirectToAction(nameof(ViewTickets));
         }
     }
 }

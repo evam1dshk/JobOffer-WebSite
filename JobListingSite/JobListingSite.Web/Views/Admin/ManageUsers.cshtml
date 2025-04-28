@@ -1,6 +1,8 @@
 ﻿@model X.PagedList.IPagedList<JobListingSite.Web.Models.Admin.UserViewModel>
 @using X.PagedList
 @using X.PagedList.Mvc.Core
+@inject UserManager<User> _userManager
+@inject SignInManager<User> _signInManager
 
 @{
     ViewData["Title"] = "Manage Users";
@@ -231,35 +233,46 @@
         <tbody>
             @foreach (var user in Model)
             {
+                var loggedInUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
                 <tr>
                     <td>@user.UserName</td>
                     <td>@user.Email</td>
                     <td>@user.Role</td>
                     <td>
                         <div class="d-flex justify-content-center gap-2">
-                            <a asp-action="ChangeRole" asp-route-userId="@user.UserId" class="btn btn-ombre-green btn-sm">
-                                <i class="fas fa-user-cog"></i> Change Role
-                            </a>
-
-                            @if (user.IsLockedOut)
+                            @if (user.UserId != loggedInUserId)
                             {
-                                <form asp-action="UnlockUser" method="post" class="d-inline unlock-form">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="userId" value="@user.UserId" />
-                                    <button type="submit" class="btn btn-ombre-green btn-sm">
-                                        <i class="fas fa-lock-open"></i> Unlock
-                                    </button>
-                                </form>
+                                <a asp-action="ChangeRole" asp-route-userId="@user.UserId" class="btn btn-ombre-green btn-sm">
+                                    <i class="fas fa-user-cog"></i> Change Role
+                                </a>
+
+                                @if (user.IsLockedOut)
+                                {
+                                    <form asp-action="UnlockUser" method="post" class="d-inline unlock-form">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@user.UserId" />
+                                        <button type="submit" class="btn btn-ombre-green btn-sm">
+                                            <i class="fas fa-lock-open"></i> Unlock
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="LockUser" method="post" class="d-inline lock-form">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@user.UserId" />
+                                        <button type="submit" class="btn btn-ombre-red btn-sm">
+                                            <i class="fas fa-lock"></i> Lock
+                                        </button>
+                                    </form>
+                                }
                             }
                             else
                             {
-                                <form asp-action="LockUser" method="post" class="d-inline lock-form">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="userId" value="@user.UserId" />
-                                    <button type="submit" class="btn btn-ombre-red btn-sm">
-                                        <i class="fas fa-lock"></i> Lock
-                                    </button>
-                                </form>
+                                <button class="btn btn-secondary btn-sm" disabled>
+                                    <i class="fas fa-ban"></i> Cannot Manage Yourself
+                                </button>
                             }
                         </div>
                     </td>
@@ -267,6 +280,7 @@
             }
         </tbody>
     </table>
+
     <div class="d-flex justify-content-center mt-4">
         @Html.PagedListPager(Model, page => Url.Action("ManageUsers", new { page }),
         new PagedListRenderOptions
@@ -275,10 +289,9 @@
         UlElementClasses = new[] { "pagination", "justify-content-center" },
         LiElementClasses = new[] { "page-item" },
         PageClasses = new[] { "page-link" },
-        MaximumPageNumbersToDisplay = 5,
+        MaximumPageNumbersToDisplay = 5
         })
     </div>
-
 </div>
 
 @section Scripts {
@@ -292,7 +305,6 @@
             lockForms.forEach(form => {
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
-
                     Swal.fire({
                         title: 'Are you sure?',
                         text: "You are about to lock this user!",
@@ -313,7 +325,6 @@
             unlockForms.forEach(form => {
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
-
                     Swal.fire({
                         title: 'Are you sure?',
                         text: "You are about to unlock this user!",
@@ -328,21 +339,6 @@
                             form.submit();
                         }
                     });
-                });
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const links = document.querySelectorAll('.pagination a');
-
-            links.forEach(link => {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const href = this.getAttribute('href');
-                    document.body.style.opacity = 0.5;
-                    setTimeout(() => {
-                        window.location.href = href;
-                    }, 150);
                 });
             });
         });

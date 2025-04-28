@@ -12,6 +12,8 @@ using System.Data;
 using X.PagedList;
 using X.PagedList.Mvc.Core;
 using X.PagedList.Extensions;
+using Microsoft.AspNetCore.Identity;
+using System.Net.Sockets;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -19,103 +21,57 @@ namespace JobListingSite.Web.Controllers
     public class HRController : Controller
     {
         private readonly JobListingDbContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public HRController(JobListingDbContext context)
+        public HRController(JobListingDbContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> RequestEdit(int offerId)
+
+        public async Task<IActionResult> Dashboard(string? search, int? categoryId, int page = 1)
         {
-            var offer = await _context.Offers.FindAsync(offerId);
-            if (offer == null) return NotFound();
-
-            var model = new RequestEditViewModel
-            {
-                OfferId = offer.OfferId,
-                JobTitle = offer.Title
-            };
-
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RequestEdit(RequestEditViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var request = new JobEditRequest
-            {
-                OfferId = model.OfferId,
-                RequestedChanges = model.RequestedChanges,
-                AdditionalComments = model.AdditionalComments,
-                Priority = model.Priority
-            };
-
-            _context.JobEditRequests.Add(request);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Edit request submitted successfully!";
-            return RedirectToAction("Dashboard");
-        }
-
-        public async Task<IActionResult> Dashboard(string search, int page = 1)
-        {
-            var pageSize = 10;
+            int pageSize = 7;
 
             var offersQuery = _context.Offers
                 .Include(o => o.Category)
-                .Include(o => o.JobApplications)
+                .OrderByDescending(o => o.CreatedAt)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                offersQuery = offersQuery.Where(o =>
-                    o.Title.Contains(search) ||
-                    o.Category.Name.Contains(search));
+                offersQuery = offersQuery.Where(o => o.Title.Contains(search));
             }
 
-            var offersPaged = offersQuery
-                .OrderByDescending(o => o.CreatedAt)
-                .ToPagedList(page, pageSize);
+            if (categoryId.HasValue)
+            {
+                offersQuery = offersQuery.Where(o => o.CategoryId == categoryId);
+            }
 
-            var dashboardVm = new HRDashboardViewModel
+            var pagedOffers = offersQuery.ToPagedList(page, pageSize);
+
+            var model = new HRDashboardViewModel
             {
                 TotalJobs = await _context.Offers.CountAsync(),
                 TotalApplications = await _context.JobApplications.CountAsync(),
                 PendingApplications = await _context.JobApplications.CountAsync(a => a.Status == ApplicationStatus.Pending),
+                ApprovedApplications = await _context.JobApplications.CountAsync(a => a.Status == ApplicationStatus.Approved),
                 RejectedApplications = await _context.JobApplications.CountAsync(a => a.Status == ApplicationStatus.Rejected),
-                RecentOffers = offersPaged,
+                RecentOffers = pagedOffers,
+                CurrentPage = page,
+                TotalPages = pagedOffers.PageCount,
                 SearchQuery = search,
-                CurrentPage = offersPaged.PageNumber,
-                TotalPages = offersPaged.PageCount
+                SelectedCategoryId = categoryId,
+                AllCategories = await _context.Categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    }).ToListAsync()
             };
 
-            return View(dashboardVm);
-        }
-
-
-        public async Task<IActionResult> BrowseOffers(string search, int page = 1)
-        {
-            var pageSize = 10;
-            var query = _context.Offers
-                .Include(o => o.Category)
-                .Include(o => o.JobApplications)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Where(o => o.Title.Contains(search) || o.Category.Name.Contains(search));
-            }
-
-            var offers = query.OrderByDescending(o => o.OfferId).ToPagedList(page, 5);
-            ViewBag.SearchQuery = search;
-            return View("BrowseOffers", offers);
+            return View(model);
         }
 
         public IActionResult ViewApplications(int offerId, string? statusFilter, int page = 1)
@@ -163,8 +119,6 @@ namespace JobListingSite.Web.Controllers
             return View(viewModel);
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> ApproveApplication(int applicationId)
         {
@@ -190,6 +144,7 @@ namespace JobListingSite.Web.Controllers
 
             return RedirectToAction("ViewApplications", new { offerId = application.OfferId });
         }
+
         public async Task<IActionResult> EditJob(int id)
         {
             var job = await _context.Offers.FindAsync(id);
@@ -215,6 +170,41 @@ namespace JobListingSite.Web.Controllers
             return View(viewModel);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditJob(JobFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.Categories = await _context.Categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    }).ToListAsync();
+                return View(model);
+            }
+
+            var offer = await _context.Offers.FindAsync(model.OfferId);
+            if (offer == null)
+            {
+                TempData["ErrorMessage"] = "Job offer not found!";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            offer.Title = model.Title;
+            offer.Description = model.Description;
+            offer.Salary = model.Salary;
+            offer.CategoryId = model.CategoryId;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Job offer updated successfully!";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteJob(int id)
         {
             var job = await _context.Offers.FindAsync(id);
@@ -229,6 +219,75 @@ namespace JobListingSite.Web.Controllers
 
             TempData["SuccessMessage"] = "Job offer deleted successfully!";
             return RedirectToAction(nameof(Dashboard));
+        }
+
+
+        [Authorize(Roles = "HR")]
+        [HttpGet]
+        public IActionResult CreateTicket()
+        {
+            return View();
+        }
+
+        [Authorize(Roles = "HR")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateTicket(CreateTicketViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.GetUserAsync(User);
+
+            var ticket = new HRTicket
+            {
+                Title = model.Title,
+                Description = model.Description,
+                Priority = model.Priority,
+                Status = TicketStatus.Open,
+                CreatedAt = DateTime.UtcNow,
+                CreatedById = user.Id
+            };
+
+            _context.HRTickets.Add(ticket);
+            await _context.SaveChangesAsync();
+
+            TempData["TicketCreated"] = true;
+            TempData["NewTicketId"] = ticket.Id;
+
+            return RedirectToAction("CreatedTicket");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CreatedTicket(int page = 1)
+        {
+            int pageSize = 5;
+
+            var user = await _userManager.GetUserAsync(User);
+            var tickets =  _context.HRTickets
+                .Where(t => t.CreatedById == user.Id)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToPagedList(page, pageSize);
+
+            return View(tickets);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteTicket(int id)
+        {
+            var ticket = await _context.HRTickets.FindAsync(id);
+            if (ticket == null)
+            {
+                TempData["ErrorMessage"] = "Ticket not found.";
+                return RedirectToAction(nameof(CreatedTicket));
+            }
+
+            _context.HRTickets.Remove(ticket);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Ticket deleted successfully!";
+            return RedirectToAction(nameof(CreatedTicket));
         }
 
     }

@@ -4,6 +4,7 @@ using JobListingSite.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobListingSite.Web.Data.Migrations
 {
     [DbContext(typeof(JobListingDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250427144655_DeletingJobEditRequest")]
+    partial class DeletingJobEditRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -110,47 +112,6 @@ namespace JobListingSite.Web.Data.Migrations
                     b.ToTable("CompanyProfiles");
                 });
 
-            modelBuilder.Entity("JobListingSite.Data.Entities.HRTicket", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.ToTable("HRTickets");
-                });
-
             modelBuilder.Entity("JobListingSite.Data.Entities.JobApplication", b =>
                 {
                     b.Property<int>("Id")
@@ -181,6 +142,37 @@ namespace JobListingSite.Web.Data.Migrations
                     b.ToTable("JobApplications");
                 });
 
+            modelBuilder.Entity("JobListingSite.Data.Entities.JobEditRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AdditionalComments")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OfferId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RequestedChanges")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OfferId");
+
+                    b.ToTable("JobEditRequests");
+                });
+
             modelBuilder.Entity("JobListingSite.Data.Entities.Offer", b =>
                 {
                     b.Property<int>("OfferId")
@@ -206,7 +198,6 @@ namespace JobListingSite.Web.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Salary")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Title")
@@ -374,28 +365,28 @@ namespace JobListingSite.Web.Data.Migrations
                         new
                         {
                             Id = "1",
-                            ConcurrencyStamp = "62306042-d238-484a-8d00-c73f29bd8c2c",
+                            ConcurrencyStamp = "e61bd9f0-954d-49d9-9682-471352fdff73",
                             Name = "Registered",
                             NormalizedName = "REGISTERED"
                         },
                         new
                         {
                             Id = "2",
-                            ConcurrencyStamp = "46740654-3158-4f4e-ab8f-4949919e64a9",
+                            ConcurrencyStamp = "b94cca26-2739-4f63-88d8-8de1b89fef49",
                             Name = "HR",
                             NormalizedName = "HR"
                         },
                         new
                         {
                             Id = "3",
-                            ConcurrencyStamp = "a8e6c572-9c3b-4d43-b2c2-892d00932147",
+                            ConcurrencyStamp = "410617c4-aa54-46c2-96e8-711eabdee378",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "4",
-                            ConcurrencyStamp = "f551759d-777d-45e0-9c9e-bdbc40580227",
+                            ConcurrencyStamp = "b2a1835d-e6c6-4bb7-be52-75822f578997",
                             Name = "Company",
                             NormalizedName = "COMPANY"
                         });
@@ -522,17 +513,6 @@ namespace JobListingSite.Web.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("JobListingSite.Data.Entities.HRTicket", b =>
-                {
-                    b.HasOne("JobListingSite.Data.Entities.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedBy");
-                });
-
             modelBuilder.Entity("JobListingSite.Data.Entities.JobApplication", b =>
                 {
                     b.HasOne("JobListingSite.Data.Entities.Offer", "Offer")
@@ -550,6 +530,17 @@ namespace JobListingSite.Web.Data.Migrations
                     b.Navigation("Offer");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("JobListingSite.Data.Entities.JobEditRequest", b =>
+                {
+                    b.HasOne("JobListingSite.Data.Entities.Offer", "Offer")
+                        .WithMany()
+                        .HasForeignKey("OfferId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Offer");
                 });
 
             modelBuilder.Entity("JobListingSite.Data.Entities.Offer", b =>

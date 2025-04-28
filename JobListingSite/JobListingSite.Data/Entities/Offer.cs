@@ -15,6 +15,7 @@ namespace JobListingSite.Data.Entities
         [MaxLength(200)]
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
+
         public decimal Salary { get; set; }
 
         public int? CategoryId { get; set; }

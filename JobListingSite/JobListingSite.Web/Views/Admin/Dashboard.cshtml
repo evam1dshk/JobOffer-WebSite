@@ -109,10 +109,39 @@
                 transform: translateY(0);
             }
     }
+
+    .btn-ombre {
+        background: linear-gradient(to right, #43cea2, #185a9d);
+        border: none;
+        color: white;
+        font-weight: 600;
+        border-radius: 50px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .btn-ombre:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 18px rgba(67, 206, 162, 0.6);
+        }
+
+
+    .btn-ombre.rounded-pill:hover {
+        transform: scale(1.08);
+        box-shadow: 0 0 18px rgba(67, 206, 162, 0.6);
+    }
+
 </style>
 
 <div class="dashboard-container">
     <h2><i class="fas fa-tools me-2"></i> Admin Dashboard</h2>
+
+    <div class="text-center mb-4">
+        <a asp-action="ViewTickets" asp-controller="Admin" class="btn-ombre d-inline-flex align-items-center gap-2 px-4 py-2">
+            <i class="fas fa-tasks"></i> <span>View HR Tickets</span>
+        </a>
+    </div>
 
     <div class="card-grid">
 
@@ -156,6 +185,22 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @if (TempData["TicketCreated"] != null)
+    {
+        <script>
+            Swal.fire({
+                title: 'Success!',
+                text: 'Your support ticket was created successfully!',
+                icon: 'success',
+                confirmButtonColor: '#28a745',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    }
+
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
