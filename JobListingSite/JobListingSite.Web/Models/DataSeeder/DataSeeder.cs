@@ -24,7 +24,6 @@ namespace JobListingSite.Web.Models.DataSedeer
                 }
             }
 
-            // Admin User
             string adminEmail = "admin@gmail.com";
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
@@ -50,7 +49,6 @@ namespace JobListingSite.Web.Models.DataSedeer
                 }
             }
 
-            // HR User
             string hrEmail = "hr@gmail.com";
             if (await userManager.FindByEmailAsync(hrEmail) == null)
             {
@@ -76,7 +74,6 @@ namespace JobListingSite.Web.Models.DataSedeer
                 }
             }
 
-            // Create Categories
             if (!dbContext.Categories.Any())
             {
                 dbContext.Categories.AddRange(new[]
@@ -88,7 +85,6 @@ namespace JobListingSite.Web.Models.DataSedeer
                 await dbContext.SaveChangesAsync();
             }
 
-            // Company User
             string companyEmail = "company@gmail.com";
             if (await userManager.FindByEmailAsync(companyEmail) == null)
             {
@@ -150,7 +146,6 @@ namespace JobListingSite.Web.Models.DataSedeer
                 }
             }
 
-            // Registered User
             string registeredEmail = "testuser@gmail.com";
             if (await userManager.FindByEmailAsync(registeredEmail) == null)
             {

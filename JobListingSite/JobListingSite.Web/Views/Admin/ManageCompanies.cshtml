@@ -131,6 +131,48 @@
         }
     }
 
+    @@media (max-width: 768px) {
+    .table thead {
+        display: none;
+    }
+
+    .table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .table tbody tr {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 1.5rem;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: block;
+        text-align: center;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    .table td {
+        display: block;
+        padding: 0.75rem;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .table td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #185a9d;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+}
+
+
     .pagination {
         display: flex;
         justify-content: center;
@@ -187,10 +229,10 @@
             @foreach (var company in Model)
             {
                 <tr>
-                    <td>@company.UserName</td>
-                    <td>@company.Email</td>
-                    <td>@company.Industry</td>
-                    <td>
+                    <td data-label="Company Name">@company.UserName</td>
+                    <td data-label="Email">@company.Email</td>
+                    <td data-label="Industry">@company.Industry</td>
+                    <td data-label="Actions">
                         <div class="action-buttons">
                             <a asp-action="EditCompanyProfile" asp-route-id="@company.CompanyProfileId" class="btn btn-ombre-green btn-sm">
                                 <i class="fas fa-edit"></i> Edit

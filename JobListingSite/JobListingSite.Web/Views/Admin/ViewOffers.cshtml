@@ -115,6 +115,12 @@
             transform: scale(1.05);
         }
 
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
 
     .pagination {
         display: flex;
@@ -140,17 +146,46 @@
             box-shadow: 0 0 12px rgba(67, 206, 162, 0.6);
         }
 
-    @@media (max-width: 768px) {
-        th, td {
-            font-size: 0.9rem;
-            padding: 0.6rem;
-        }
-
-        .btn-sm {
-            font-size: 0.8rem;
-            padding: 6px 12px;
-        }
+   @@media (max-width: 768px) {
+    .table thead {
+        display: none;
     }
+
+    .table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .table tbody tr {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 1.5rem;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: block;
+        text-align: center;
+        animation: fadeInUp 0.6s ease;
+    }
+
+    .table td {
+        display: block;
+        padding: 0.75rem;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .table td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #185a9d;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+}
 
     @@keyframes fadeInUp {
         from {
@@ -165,10 +200,11 @@
     }
 </style>
 
+
 <div class="manage-card">
     <h2><i class="fas fa-briefcase me-2"></i> Manage Job Offers</h2>
 
-    <div class="text-end mb-3">
+    <div class="d-flex justify-content-center mb-4">
         <a asp-action="Dashboard" asp-controller="Admin" class="btn btn-black-ombre">
             <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
         </a>
@@ -190,9 +226,21 @@
                 {
                     <tr>
                         <td>@offer.Title</td>
-                        <td>@(offer.Company?.CompanyProfile?.CompanyName ?? "Unknown")</td>
-                        <td>@(offer.Category?.Name ?? "Uncategorized")</td>
+
+                        <td>
+                            @(offer.Company != null && offer.Company.CompanyProfile != null
+                                ? offer.Company.CompanyProfile.CompanyName
+                                : "Unknown")
+                        </td>
+
+                        <td>
+                            @(offer.Category != null
+                                ? offer.Category.Name
+                                : "Uncategorized")
+                        </td>
+
                         <td>@offer.CreatedAt.ToShortDateString()</td>
+
                         <td>
                             <a asp-controller="Job" asp-action="Details" asp-route-id="@offer.OfferId" class="btn btn-ombre-green btn-sm me-2">
                                 <i class="fas fa-eye"></i> View
@@ -208,14 +256,12 @@
     </div>
 
     <div class="d-flex justify-content-center mt-4">
-        @Html.PagedListPager(Model, page => Url.Action("ViewOffers", new { page }),
-        new PagedListRenderOptions
+        @Html.PagedListPager(Model, page => Url.Action("ViewOffers", new { page }), new PagedListRenderOptions
         {
-            Display = PagedListDisplayMode.IfNeeded,
-            UlElementClasses = new[] { "pagination", "justify-content-center" },
-            LiElementClasses = new[] { "page-item" },
-            PageClasses = new[] { "page-link" },
-            MaximumPageNumbersToDisplay = 5
+        Display = PagedListDisplayMode.IfNeeded,
+        UlElementClasses = new[] { "pagination", "justify-content-center" },
+        LiElementClasses = new[] { "page-item" },
+        PageClasses = new[] { "page-link" }
         })
     </div>
 </div>

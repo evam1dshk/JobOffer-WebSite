@@ -121,6 +121,48 @@
             transform: scale(1.05);
         }
 
+    @@media (max-width: 768px) {
+        .table thead {
+            display: none;
+        }
+
+        .table tbody {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+            .table tbody tr {
+                background: #ffffff;
+                border-radius: 20px;
+                padding: 1.5rem;
+                width: 90%;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                display: block;
+                text-align: center;
+                animation: fadeInUp 0.6s ease;
+            }
+
+        .table td {
+            display: block;
+            padding: 0.75rem;
+            border: none;
+            font-size: 1rem;
+        }
+
+            .table td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                display: block;
+                margin-bottom: 0.5rem;
+                color: #185a9d;
+                text-transform: uppercase;
+                font-size: 0.75rem;
+            }
+    }
+
+
     @@keyframes fadeInUp {
         from {
             opacity: 0;
@@ -221,75 +263,74 @@
         </a>
     </div>
 
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>User Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th style="width: 220px;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model)
-            {
-                var loggedInUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
                 <tr>
-                    <td>@user.UserName</td>
-                    <td>@user.Email</td>
-                    <td>@user.Role</td>
-                    <td>
-                        <div class="d-flex justify-content-center gap-2">
-                            @if (user.UserId != loggedInUserId)
-                            {
-                                <a asp-action="ChangeRole" asp-route-userId="@user.UserId" class="btn btn-ombre-green btn-sm">
-                                    <i class="fas fa-user-cog"></i> Change Role
-                                </a>
-
-                                @if (user.IsLockedOut)
+                    <th>User Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    var loggedInUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    <tr>
+                        <td data-label="User Name">@user.UserName</td>
+                        <td data-label="Email">@user.Email</td>
+                        <td data-label="Role">@user.Role</td>
+                        <td data-label="Actions">
+                            <div class="action-buttons">
+                                @if (user.UserId != loggedInUserId)
                                 {
-                                    <form asp-action="UnlockUser" method="post" class="d-inline unlock-form">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="userId" value="@user.UserId" />
-                                        <button type="submit" class="btn btn-ombre-green btn-sm">
-                                            <i class="fas fa-lock-open"></i> Unlock
-                                        </button>
-                                    </form>
+                                    <a asp-action="ChangeRole" asp-route-userId="@user.UserId" class="btn btn-ombre-green btn-sm">
+                                        <i class="fas fa-user-cog"></i> Change Role
+                                    </a>
+
+                                    @if (user.IsLockedOut)
+                                    {
+                                        <form asp-action="UnlockUser" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.UserId" />
+                                            <button type="submit" class="btn btn-ombre-green btn-sm">
+                                                <i class="fas fa-lock-open"></i> Unlock
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="LockUser" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@user.UserId" />
+                                            <button type="submit" class="btn btn-ombre-red btn-sm">
+                                                <i class="fas fa-lock"></i> Lock
+                                            </button>
+                                        </form>
+                                    }
                                 }
                                 else
                                 {
-                                    <form asp-action="LockUser" method="post" class="d-inline lock-form">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="userId" value="@user.UserId" />
-                                        <button type="submit" class="btn btn-ombre-red btn-sm">
-                                            <i class="fas fa-lock"></i> Lock
-                                        </button>
-                                    </form>
+                                    <button class="btn btn-secondary btn-sm" disabled>
+                                        <i class="fas fa-ban"></i> Cannot Manage Yourself
+                                    </button>
                                 }
-                            }
-                            else
-                            {
-                                <button class="btn btn-secondary btn-sm" disabled>
-                                    <i class="fas fa-ban"></i> Cannot Manage Yourself
-                                </button>
-                            }
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
     <div class="d-flex justify-content-center mt-4">
-        @Html.PagedListPager(Model, page => Url.Action("ManageUsers", new { page }),
-        new PagedListRenderOptions
+        @Html.PagedListPager(Model, page => Url.Action("ManageUsers", new { page }), new PagedListRenderOptions
         {
         Display = PagedListDisplayMode.IfNeeded,
         UlElementClasses = new[] { "pagination", "justify-content-center" },
         LiElementClasses = new[] { "page-item" },
-        PageClasses = new[] { "page-link" },
-        MaximumPageNumbersToDisplay = 5
+        PageClasses = new[] { "page-link" }
         })
     </div>
 </div>
