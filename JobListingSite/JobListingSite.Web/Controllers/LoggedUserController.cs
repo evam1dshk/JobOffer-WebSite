@@ -29,7 +29,6 @@ namespace JobListingSite.Web.Controllers
             if (user == null)
                 return NotFound();
 
-            // ✅ TEMP DEBUG: Print user and roles
             var roles = await _userManager.GetRolesAsync(user);
             Console.WriteLine($"[DEBUG] User: {user.Email}, Roles: {string.Join(", ", roles)}");
 
@@ -74,7 +73,6 @@ namespace JobListingSite.Web.Controllers
             profile.PortfolioUrl = model.PortfolioUrl;
             profile.SelectedAvatar = model.SelectedAvatar;
 
-            // ✅ Upload profile image
             if (model.ProfileImage != null && model.ProfileImage.Length > 0)
             {
                 var uploads = Path.Combine(_env.WebRootPath, "uploads", "profile-pictures");
@@ -112,7 +110,7 @@ namespace JobListingSite.Web.Controllers
         
         public async Task<IActionResult> MyApplications()
         {
-            var userId = _userManager.GetUserId(User); // ✅ Declare userId
+            var userId = _userManager.GetUserId(User); 
 
             var applications = await _context.JobApplications
                 .Where(a => a.UserId == userId)
