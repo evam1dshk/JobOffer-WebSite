@@ -173,10 +173,8 @@ namespace JobListingSite.Test.Controllers
                 .Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>()))
                 .Returns(user.Id);
 
-            // Act
             var result = await _controller.MyApplications();
 
-            // Assert
             Assert.That(result, Is.InstanceOf<ViewResult>());
             var vr = (ViewResult)result;
             var list = vr.Model as List<MyApplicationsViewModel>;

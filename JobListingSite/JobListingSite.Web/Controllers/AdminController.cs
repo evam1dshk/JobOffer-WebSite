@@ -269,7 +269,9 @@ namespace JobListingSite.Web.Controllers
 
             var currentRole = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "None";
 
-            var availableRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+            var availableRoles = _roleManager.Roles
+                .Select(r => r.Name)
+                .ToList();
 
             var model = new ChangeRoleViewModel
             {
