@@ -86,7 +86,6 @@ namespace JobListingSite.Web.Controllers
                 profile.ProfileImageUrl = "/uploads/profile-pictures/" + fileName;
             }
 
-            // ✅ Upload resume
             if (model.Resume != null && model.Resume.Length > 0)
             {
                 var uploads = Path.Combine(_env.WebRootPath, "uploads", "resumes");

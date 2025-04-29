@@ -36,7 +36,6 @@ namespace JobListingSite.Web.Controllers
             var totalJobs = await _context.Offers.CountAsync();
             var totalCategories = await _context.Categories.CountAsync();
 
-            // 📈 Calculate new job offers added per day (last 7 days)
             var oneWeekAgo = DateTime.UtcNow.AddDays(-7);
 
             var newOffersByDay = await _context.Offers
@@ -511,8 +510,6 @@ namespace JobListingSite.Web.Controllers
 
             return View(company);
         }
-
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]

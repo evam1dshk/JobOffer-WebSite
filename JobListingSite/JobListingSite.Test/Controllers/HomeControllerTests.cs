@@ -3,6 +3,7 @@ using JobListingSite.Web.Controllers;
 using JobListingSite.Web.Data;
 using JobListingSite.Web.Models;
 using JobListingSite.Web.Models.Home;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,14 +33,21 @@ namespace JobListingSite.Test.Controllers
                 .Options;
 
             _context = new JobListingDbContext(options);
-
             _controller = new HomeController(_userManagerMock.Object, _context);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.TraceIdentifier = Guid.NewGuid().ToString();
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
         }
+
 
         [TearDown]
         public void TearDown()
         {
-            _context.Database.EnsureDeleted(); // clean after each test
+            _context.Database.EnsureDeleted(); 
             _context.Dispose();
         }
 
@@ -85,12 +93,17 @@ namespace JobListingSite.Test.Controllers
         [Test]
         public void Error_ReturnsViewResult_WithErrorViewModel()
         {
+            // Act
             var result = _controller.Error();
 
+            // Assert
             Assert.That(result, Is.InstanceOf<ViewResult>());
 
             var viewResult = result as ViewResult;
-            Assert.That(model, Is.InstanceOf<HomeViewModel>());
+            Assert.That(viewResult, Is.Not.Null); 
+
+            var model = viewResult.Model;
+            Assert.That(model, Is.InstanceOf<ErrorViewModel>());
         }
     }
 }

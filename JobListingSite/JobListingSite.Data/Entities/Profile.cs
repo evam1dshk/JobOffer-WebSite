@@ -19,7 +19,6 @@ namespace JobListingSite.Data.Entities
         public string? ProfileImageUrl { get; set; }
         public string? SelectedAvatar { get; set; }
 
-        // Relationships
         public string UserId { get; set; }
         public User User { get; set; }
     }

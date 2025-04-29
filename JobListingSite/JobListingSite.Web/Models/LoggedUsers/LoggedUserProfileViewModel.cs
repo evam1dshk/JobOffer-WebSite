@@ -15,8 +15,6 @@ namespace JobListingSite.Web.Models.LoggedUsers
         public string? ProfileImageUrl { get; set; }
         public string? SelectedAvatar { get; set; }
 
-
-
         public IFormFile? Resume { get; set; }
         public string? ResumeFilePath { get; set; }
         public IFormFile? ProfileImage { get; set; }

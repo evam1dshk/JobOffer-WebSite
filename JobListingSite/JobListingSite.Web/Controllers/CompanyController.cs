@@ -34,7 +34,6 @@ namespace JobListingSite.Web.Controllers
             _emailSender = emailSender;
         }
 
-
         private async Task<string> UploadLogoLocallyAsync(IFormFile logo)
         {
             if (logo == null || logo.Length == 0)
@@ -53,7 +52,6 @@ namespace JobListingSite.Web.Controllers
                 await logo.CopyToAsync(stream);
             }
 
-            // Return the relative path (for database)
             return "/uploads/logos/" + uniqueFileName;
         }
 
@@ -175,7 +173,6 @@ namespace JobListingSite.Web.Controllers
             return View(model);
         }
 
-        // POST: Company/AddJob
         [HttpPost]
         [Authorize(Roles = "Company")]
         [ValidateAntiForgeryToken]
@@ -262,7 +259,6 @@ namespace JobListingSite.Web.Controllers
                 return View("AddJob", model);
             }
 
-            // ✅ Update job
             job.Title = model.Title;
             job.Description = model.Description;
             job.Salary = model.Salary;
@@ -297,7 +293,7 @@ namespace JobListingSite.Web.Controllers
             var offer = await _context.Offers
                 .Include(o => o.JobApplications)
                     .ThenInclude(a => a.User)
-                        .ThenInclude(u => u.Profile) // ✅ Include profile info
+                        .ThenInclude(u => u.Profile) 
                 .FirstOrDefaultAsync(o => o.OfferId == id && o.CompanyId == userId);
 
             if (offer == null) return NotFound();
@@ -316,7 +312,7 @@ namespace JobListingSite.Web.Controllers
                     ProfilePictureUrl = a.User.Profile?.ProfileImageUrl ?? a.User.Profile?.SelectedAvatar
                 })
                 .OrderByDescending(a => a.AppliedOn)
-                .ToPagedList(page, 5); // ✅ 5 per page
+                .ToPagedList(page, 5);
 
             var viewModel = new JobApplicationsViewModel
             {
