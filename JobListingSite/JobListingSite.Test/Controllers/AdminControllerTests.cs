@@ -343,7 +343,6 @@ namespace JobListingSite.Test.Controllers
         [Test]
         public async Task ViewCompanyProfile_ReturnsOrRedirects()
         {
-            // ARRANGE: seed both user and its profile
             var user = new User
             {
                 Id = "u2",
