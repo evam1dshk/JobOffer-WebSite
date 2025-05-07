@@ -110,7 +110,7 @@ namespace JobListingSite.Web.Models.DataSedeer
                         Phone = "123-456-7890",
                         ContactEmail = companyEmail,
                         Description = "We build eco-friendly solutions.",
-                        LogoUrl = "/img/sample-logo.png",
+                        LogoUrl = "/uploads/logos/15b14cbb-7902-46f5-a11b-361bf21094bb_history-icon-front-side-white-background.jpg",
                         BannerImageUrl = "/img/sample-banner.jpg"
                     });
                     await dbContext.SaveChangesAsync();

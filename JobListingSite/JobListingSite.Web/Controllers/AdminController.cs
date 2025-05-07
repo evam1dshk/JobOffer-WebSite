@@ -395,7 +395,7 @@ namespace JobListingSite.Web.Controllers
         public async Task<IActionResult> ManageUsers(int page = 1)
         {
             var users = await _context.Users
-                .Where(u => !u.IsCompany)
+                //.Where(u => !u.IsCompany)
                 .OrderBy(u => u.Name)
                 .ToListAsync();
 

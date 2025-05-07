@@ -59,6 +59,8 @@ builder.Services.AddRazorPages();
 using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 {
     var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<JobListingDbContext>();
+    dbContext.Database.Migrate();
     await DataSeeder.SeedRolesAndAdminAsync(services);
 }
 
