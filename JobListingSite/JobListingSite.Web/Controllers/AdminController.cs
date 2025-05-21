@@ -59,6 +59,17 @@ namespace JobListingSite.Web.Controllers
             ViewBag.UnreadTickets = await _context.HRTickets
                 .CountAsync(t => t.Status == TicketStatus.Open);
 
+            var locationStats = await _context.Offers
+                .GroupBy(o => o.Location)
+                .Select(g => new
+                {
+                Location = g.Key,
+                Count = g.Count()
+                }).ToListAsync();
+
+            ViewBag.JobLocations = locationStats;
+
+
             return View();
         }
 
@@ -549,7 +560,7 @@ namespace JobListingSite.Web.Controllers
             company.LinkedIn = model.LinkedIn;
             company.Twitter = model.Twitter;
             company.Location = model.Location;
-            company.FoundedYear = model.FoundedYear;
+            company.FoundedDate = model.FoundedDate;
             company.NumberOfEmployees = model.NumberOfEmployees;
 
             await _context.SaveChangesAsync();

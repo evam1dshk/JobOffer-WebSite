@@ -25,9 +25,11 @@ namespace JobListingSite.Web.Models.Company
         [Display(Name = "Company Website")]
         public string? CompanyWebsite { get; set; }
 
-        [Display(Name = "FoundedYear")]
+        [Display(Name = "FoundedDate")]
         [DataType(DataType.Date)]
-        public int? FoundedYear { get; set; }
+        public DateTime? FoundedDate { get; set; }
+        [Display(Name = "Company Location")]
+        [StringLength(100, ErrorMessage = "Location must be under 100 characters.")]
         public string? Location { get; set; }
         public string? LinkedIn { get; set; }
         public string? Twitter { get; set; }

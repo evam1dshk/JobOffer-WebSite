@@ -95,7 +95,7 @@ namespace JobListingSite.Web.Controllers
                 ContactEmail = user.CompanyProfile.ContactEmail ?? user.Email,
                 Phone = user.CompanyProfile.Phone,
                 CompanyWebsite = user.CompanyProfile.CompanyWebsite,
-                FoundedYear = user.CompanyProfile.FoundedYear,
+                FoundedDate = user.CompanyProfile.FoundedDate,
                 Location = user.CompanyProfile.Location,
                 LinkedIn = user.CompanyProfile.LinkedIn,
                 Twitter = user.CompanyProfile.Twitter,
@@ -114,32 +114,59 @@ namespace JobListingSite.Web.Controllers
                 .Include(u => u.CompanyProfile)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (user == null) return NotFound();
-            if (!ModelState.IsValid) return View(model);
+            if (user == null || user.CompanyProfile == null)
+            {
+                TempData["ErrorMessage"] = "Company profile not found.";
+                return NotFound();
+            }
 
+            foreach (var key in ModelState.Keys)
+            {
+                var state = ModelState[key];
+                foreach (var error in state.Errors)
+                {
+                    Console.WriteLine($"⚠️ Validation error on {key}: {error.ErrorMessage}");
+                }
+            }
+
+
+            if (!ModelState.IsValid)
+            {
+                // Log validation errors to console
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine("❌ Validation error: " + error.ErrorMessage);
+                }
+
+                return View(model);
+            }
+
+            // ✅ Update logo only if file is provided
             if (model.Logo != null)
             {
                 user.CompanyProfile.LogoUrl = await UploadLogoLocallyAsync(model.Logo);
-
             }
 
+            // ✅ Update profile fields
             user.CompanyProfile.CompanyName = model.CompanyName;
             user.CompanyProfile.Description = model.Description;
             user.CompanyProfile.Industry = model.Industry;
             user.CompanyProfile.Phone = model.Phone;
             user.CompanyProfile.ContactEmail = model.ContactEmail;
             user.CompanyProfile.CompanyWebsite = model.CompanyWebsite;
-            user.CompanyProfile.FoundedYear = model.FoundedYear;
+            user.CompanyProfile.FoundedDate = model.FoundedDate;
             user.CompanyProfile.Location = model.Location;
             user.CompanyProfile.LinkedIn = model.LinkedIn;
             user.CompanyProfile.Twitter = model.Twitter;
             user.CompanyProfile.NumberOfEmployees = model.NumberOfEmployees;
 
+            // ✅ Save to database
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Profile updated with your Canva logo!";
+            TempData["SuccessMessage"] = "Company profile updated successfully!";
             return RedirectToAction("ManageProfile");
         }
+
 
         [Authorize(Roles = "Company")]
         public async Task<IActionResult> ManageJobs(int page = 1)
@@ -201,6 +228,7 @@ namespace JobListingSite.Web.Controllers
                 Salary = model.Salary,
                 CategoryId = model.CategoryId,
                 CompanyId = userId,
+                Location = model.Location,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -226,6 +254,7 @@ namespace JobListingSite.Web.Controllers
                 Description = job.Description,
                 Salary = job.Salary,
                 CategoryId = job.CategoryId,
+                Location = job.Location,
                 Categories = _context.Categories.Select(c => new SelectListItem
                 {
                     Value = c.CategoryId.ToString(),
@@ -263,6 +292,7 @@ namespace JobListingSite.Web.Controllers
             job.Description = model.Description;
             job.Salary = model.Salary;
             job.CategoryId = model.CategoryId;
+            job.Location = model.Location;
 
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Job updated successfully!";

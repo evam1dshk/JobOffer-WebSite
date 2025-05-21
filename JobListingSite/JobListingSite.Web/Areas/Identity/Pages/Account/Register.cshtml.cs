@@ -77,7 +77,6 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel : IValidatableObject
         {
-            [Required(ErrorMessage = "Full Name is required.")]
             [StringLength(100, ErrorMessage = "Name must be between 2 and 100 characters.", MinimumLength = 2)]
             [Display(Name = "Full Name")]
             public string? Name { get; set; }
@@ -106,9 +105,10 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
             [Display(Name = "Industry")]
             public int? CategoryId { get; set; }
 
-            [Display(Name = "Phone Number")]
             [Required(ErrorMessage = "Phone number is required.")]
-            [Phone(ErrorMessage = "Please enter a valid phone number.")]
+            [Phone(ErrorMessage = "Enter a valid phone number.")]
+            [RegularExpression(@"^\+?\d{10,15}$", ErrorMessage = "Use international format, 10-15 digits.")]
+            [Display(Name = "Phone Number")]
             public string? PhoneNumber { get; set; }
 
             [Display(Name = "Industry")]
@@ -163,6 +163,7 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
                 {
                     UserName = Input.Email,
                     Email = Input.Email,
+                    PhoneNumber = Input.PhoneNumber,
                     Name = Input.Name,
                     IsCompany = Input.IsCompany,
                     IsApproved = !Input.IsCompany
@@ -186,7 +187,8 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
                             UserId = user.Id,
                             CompanyName = Input.CompanyName,
                             Industry = Input.Industry,
-                            Phone = Input.PhoneNumber
+                            Phone = Input.PhoneNumber,
+                            Location = null
                         };
 
                         _context.CompanyProfiles.Add(companyProfile);
@@ -197,7 +199,8 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
                         // ✅ Create basic user profile
                         var profile = new Profile
                         {
-                            UserId = user.Id
+                            UserId = user.Id,
+                            Phone = Input.PhoneNumber
                         };
 
                         _context.Profiles.Add(profile);

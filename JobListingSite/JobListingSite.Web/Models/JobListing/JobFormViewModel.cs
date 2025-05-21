@@ -22,6 +22,10 @@ namespace JobListingSite.Web.Models.JobListing
         [Display(Name = "Category")]
         public int? CategoryId { get; set; }
 
+        [Required(ErrorMessage = "Location is required.")]
+        [Display(Name = "Location")]
+        public string Location { get; set; }
+
         public IEnumerable<SelectListItem>? Categories { get; set; }
     }
 }

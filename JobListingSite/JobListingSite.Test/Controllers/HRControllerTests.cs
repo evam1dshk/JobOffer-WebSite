@@ -130,7 +130,6 @@ namespace JobListingSite.Test.Controllers
         [Test]
         public async Task ViewApplications_ReturnsView_WithFilteredApplications()
         {
-            // same seeding for offer and users
             var offer = new Offer
             {
                 OfferId = 20,

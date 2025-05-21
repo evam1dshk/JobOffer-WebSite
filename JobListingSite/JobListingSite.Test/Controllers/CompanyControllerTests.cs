@@ -150,7 +150,7 @@ namespace JobListingSite.Test.Controllers
                 ContactEmail = "e2@e2",
                 Phone = "p",
                 CompanyWebsite = "w",
-                FoundedYear = 2000,
+                FoundedDate = new DateTime(2020, 10, 1),
                 Location = "L",
                 LinkedIn = "li",
                 Twitter = "tw",

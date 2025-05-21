@@ -110,22 +110,25 @@
             <input asp-for="Phone" class="form-control" />
             <label asp-for="Phone"></label>
         </div>
-        <div class="form-floating position-relative mb-3">
+        <div class="form-floating mb-3">
             <i class="fas fa-map-marker-alt form-icon"></i>
-            <input asp-for="Location" class="form-control" placeholder="Location" />
+            <input asp-for="Location" class="form-control" placeholder="City, Country" />
             <label asp-for="Location"></label>
+            <span asp-validation-for="Location" class="text-danger"></span>
         </div>
 
         <div class="form-floating position-relative mb-3">
-            <i class="fas fa-building form-icon"></i>
-            <input asp-for="FoundedYear" class="form-control" placeholder="Founded Year" />
-            <label asp-for="FoundedYear"></label>
+            <i class="fas fa-calendar-alt form-icon"></i>
+            <input asp-for="FoundedDate" type="date" class="form-control" />
+            <label asp-for="FoundedDate"></label>
+            <span asp-validation-for="FoundedDate" class="text-danger"></span>
         </div>
 
         <div class="form-floating position-relative mb-3">
             <i class="fas fa-users form-icon"></i>
-            <input asp-for="NumberOfEmployees" class="form-control" placeholder="Number of Employees" />
+            <input asp-for="NumberOfEmployees" type="number" class="form-control" placeholder="Employees" />
             <label asp-for="NumberOfEmployees"></label>
+            <span asp-validation-for="NumberOfEmployees" class="text-danger"></span>
         </div>
 
         <div class="form-floating position-relative mb-3">

@@ -30,7 +30,7 @@ namespace JobListingSite.Data.Entities
         public string? BannerImageUrl { get; set; }
 
         public string? Location { get; set; }
-        public int? FoundedYear { get; set; }
+        public DateTime? FoundedDate { get; set; }
         public int? NumberOfEmployees { get; set; }
 
         [MaxLength(100)]
