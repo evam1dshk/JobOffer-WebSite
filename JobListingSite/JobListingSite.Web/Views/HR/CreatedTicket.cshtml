@@ -141,6 +141,16 @@
                             <span class="badge-status badge-resolved">Resolved</span>
                         }
 
+                        @if (!string.IsNullOrEmpty(ticket.AdminReply))
+                        {
+                            <div class="alert alert-info mt-2">
+                                <strong>Admin Reply:</strong><br />
+                                @ticket.AdminReply <br />
+                                <small class="text-muted">on @ticket.RepliedAt?.ToLocalTime().ToString("g")</small>
+                            </div>
+                        }
+
+
                         <span class="badge-priority @GetPriorityClass(ticket.Priority)">
                             @ticket.Priority
                         </span>

@@ -209,29 +209,6 @@
 
     <canvas id="offersChart" height="120"></canvas>
 
-    <h4 class="mt-5 mb-3 text-center text-primary">
-        <i class="fas fa-map-marker-alt me-2"></i> Job Offers by Location
-    </h4>
-
-    <table class="table table-hover table-bordered text-center shadow-sm">
-        <thead class="table-light">
-            <tr>
-                <th>Location</th>
-                <th>Number of Offers</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in (IEnumerable<dynamic>)ViewBag.JobLocations)
-            {
-                <tr>
-                    <td>@(item.Location ?? "Not specified")</td>
-                    <td>@item.Count</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-
 </div>
 
 @section Scripts {
@@ -253,7 +230,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Animate counters
             const counters = document.querySelectorAll('.stat-card p');
 
             counters.forEach(counter => {

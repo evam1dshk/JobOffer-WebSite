@@ -604,6 +604,27 @@ namespace JobListingSite.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReplyToTicket(int id, string reply)
+        {
+            var ticket = await _context.HRTickets.FindAsync(id);
+            if (ticket == null)
+            {
+                TempData["ErrorMessage"] = "Ticket not found.";
+                return RedirectToAction(nameof(ViewTickets));
+            }
+
+            ticket.AdminReply = reply;
+            ticket.RepliedAt = DateTime.UtcNow;
+            ticket.IsReadByHR = false;
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Reply sent to HR.";
+            return RedirectToAction(nameof(ViewTickets));
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteTicketAdmin(int id)
         {
             var ticket = await _context.HRTickets.FindAsync(id);

@@ -35,5 +35,11 @@ namespace JobListingSite.Data.Entities
         [ForeignKey("User")]
         public string CreatedById { get; set; } = null!;
         public User? CreatedBy { get; set; } = null!;
+        public string? AdminReply { get; set; }
+
+        public DateTime? RepliedAt { get; set; }
+
+        public bool IsReadByHR { get; set; } = true;
+
     }
 }
