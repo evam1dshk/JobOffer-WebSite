@@ -71,6 +71,15 @@ namespace JobListingSite.Web.Controllers
                     }).ToListAsync()
             };
 
+            var pendingCounts = await _context.JobApplications
+                    .Where(a => a.Status == ApplicationStatus.Pending)
+                    .GroupBy(a => a.OfferId)
+                    .Select(g => new { OfferId = g.Key, Count = g.Count() })
+                    .ToDictionaryAsync(x => x.OfferId, x => x.Count);
+
+            model.PendingApplicationsPerOffer = pendingCounts;
+
+
             return View(model);
         }
 
@@ -264,7 +273,7 @@ namespace JobListingSite.Web.Controllers
             int pageSize = 5;
 
             var user = await _userManager.GetUserAsync(User);
-            var tickets =  _context.HRTickets
+            var tickets = _context.HRTickets
                 .Where(t => t.CreatedById == user.Id)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToPagedList(page, pageSize);

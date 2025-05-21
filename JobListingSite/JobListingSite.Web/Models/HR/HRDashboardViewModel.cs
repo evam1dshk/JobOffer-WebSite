@@ -18,6 +18,7 @@ namespace JobListingSite.Web.Models.HR
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
         public List<SelectListItem>? AllCategories { get; set; }
+        public Dictionary<int, int> PendingApplicationsPerOffer { get; set; } = new();
 
         public int? SelectedCategoryId { get; set; }
     }

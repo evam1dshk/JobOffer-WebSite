@@ -9,6 +9,7 @@ using JobListingSite.Web.Controllers;
 using JobListingSite.Web.Data;
 using JobListingSite.Web.Models.Company;
 using JobListingSite.Web.Models.HR;
+using JobListingSite.Web.Models.JobListing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -277,5 +278,44 @@ namespace JobListingSite.Test.Controllers
             Assert.That(await _ctx.HRTickets.FindAsync(5), Is.Null);
             Assert.That(_controller.TempData["SuccessMessage"], Is.EqualTo("Ticket deleted successfully!"));
         }
+
+        [Test]
+        public async Task EditJob_Post_InvalidModel_ReturnsViewWithSameData()
+        {
+            var category = new Category { CategoryId = 1, Name = "Dev" };
+            var job = new Offer
+            {
+                OfferId = 99,
+                Title = "Dev Job",
+                Description = "Build stuff",
+                Salary = 1000,
+                CategoryId = 1,
+                CreatedAt = DateTime.UtcNow
+            };
+            _ctx.Categories.Add(category);
+            _ctx.Offers.Add(job);
+            await _ctx.SaveChangesAsync();
+
+            var model = new JobFormViewModel
+            {
+                OfferId = 99,
+                Title = "", 
+                Description = "Updated",
+                Salary = 2000,
+                CategoryId = 1
+            };
+
+            _controller.ModelState.AddModelError("Title", "Title is required");
+
+            var result = await _controller.EditJob(model) as ViewResult;
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.ViewName, Is.Null.Or.Empty, "Should return default view");
+            Assert.That(result.Model, Is.InstanceOf<JobFormViewModel>());
+            var returnedModel = result.Model as JobFormViewModel;
+            Assert.That(returnedModel!.Description, Is.EqualTo("Updated"));
+            Assert.That(returnedModel.Categories, Is.Not.Null.And.Not.Empty);
+        }
+
     }
 }

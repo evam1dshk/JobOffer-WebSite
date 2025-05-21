@@ -56,6 +56,9 @@ namespace JobListingSite.Web.Controllers
 
             ViewBag.NewOffersByDay = newOffersByDay;
 
+            ViewBag.UnreadTickets = await _context.HRTickets
+                .CountAsync(t => t.Status == TicketStatus.Open);
+
             return View();
         }
 

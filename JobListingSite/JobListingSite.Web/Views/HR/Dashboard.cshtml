@@ -175,8 +175,15 @@
                                         <i class="fas fa-trash"></i> <span>Delete</span>
                                     </button>
                                 </form>
-                                <a asp-action="ViewApplications" asp-route-offerId="@offer.OfferId" class="btn-dash btn-view">
+                                <a asp-action="ViewApplications" asp-route-offerId="@offer.OfferId" class="btn-dash btn-view position-relative">
                                     <i class="fas fa-eye"></i> <span>View</span>
+
+                                    @if (Model.PendingApplicationsPerOffer.ContainsKey(offer.OfferId) && Model.PendingApplicationsPerOffer[offer.OfferId] > 0)
+                                    {
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" style="font-size: 0.75rem;">
+                                            @Model.PendingApplicationsPerOffer[offer.OfferId]
+                                        </span>
+                                    }
                                 </a>
                             </div>
                         </td>
