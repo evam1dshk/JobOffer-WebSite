@@ -77,21 +77,25 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel : IValidatableObject
         {
+            [Required(ErrorMessage = "Full Name is required.")]
+            [StringLength(100, ErrorMessage = "Name must be between 2 and 100 characters.", MinimumLength = 2)]
             [Display(Name = "Full Name")]
             public string? Name { get; set; }
 
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "Email is required.")]
+            [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
             public string Email { get; set; }
 
-            [Required]
-            [StringLength(100, MinimumLength = 6)]
+            [Required(ErrorMessage = "Password is required.")]
+            [StringLength(100, ErrorMessage = "Password must be at least 8 characters and contain uppercase, lowercase, and a number.", MinimumLength = 8)]
             [DataType(DataType.Password)]
+            [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
+                ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, and one number.")]
             public string Password { get; set; }
 
             [DataType(DataType.Password)]
             [Display(Name = "Confirm Password")]
-            [Compare("Password")]
+            [Compare("Password", ErrorMessage = "Passwords do not match.")]
             public string ConfirmPassword { get; set; }
 
             public bool IsCompany { get; set; }
@@ -103,6 +107,8 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
             public int? CategoryId { get; set; }
 
             [Display(Name = "Phone Number")]
+            [Required(ErrorMessage = "Phone number is required.")]
+            [Phone(ErrorMessage = "Please enter a valid phone number.")]
             public string? PhoneNumber { get; set; }
 
             [Display(Name = "Industry")]
@@ -119,10 +125,11 @@ namespace JobListingSite.Web.Areas.Identity.Pages.Account
                 {
                     yield return new ValidationResult("Company Name is required.", new[] { nameof(CompanyName) });
                 }
+
             }
         }
 
-        public List<SelectListItem> Categories { get; set; }
+    public List<SelectListItem> Categories { get; set; }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
