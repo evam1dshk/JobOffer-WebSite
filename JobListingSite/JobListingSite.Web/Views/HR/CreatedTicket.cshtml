@@ -232,7 +232,9 @@
 
                     @if (ticket.Status == TicketStatus.Open)
                     {
-                        <a asp-action="EditTicket" class="btn btn-ombre btn-sm">
+                        <a asp-action="EditTicket"
+               asp-route-id="@ticket.Id"
+               class="btn btn-ombre btn-sm">
                             <i class="fas fa-edit"></i> Edit
                         </a>
                     }
