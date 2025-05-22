@@ -31,6 +31,7 @@ namespace JobListingSite.Test.Controllers
         private JobListingDbContext _context;
         private Mock<UserManager<User>> _userManagerMock;
         private Mock<RoleManager<IdentityRole>> _roleManagerMock;
+
         [SetUp]
         public void Setup()
         {
@@ -499,7 +500,7 @@ namespace JobListingSite.Test.Controllers
             _context.HRTickets.Add(t1);
             await _context.SaveChangesAsync();
 
-            var v = _controller.ViewTickets(1) as ViewResult;
+            var v = await _controller.ViewTickets(1) as ViewResult;
             Assert.That(((IPagedList<HRTicket>)v!.Model).TotalItemCount, Is.EqualTo(1));
 
             var r = await _controller.ResolveTicket(101) as RedirectToActionResult;

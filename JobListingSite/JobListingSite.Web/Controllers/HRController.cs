@@ -14,6 +14,7 @@ using X.PagedList.Mvc.Core;
 using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Identity;
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -22,11 +23,13 @@ namespace JobListingSite.Web.Controllers
     {
         private readonly JobListingDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IEmailSender _emailSender;
 
-        public HRController(JobListingDbContext context, UserManager<User> userManager)
+        public HRController(JobListingDbContext context, UserManager<User> userManager, IEmailSender? emailSender = null)
         {
             _context = context;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
 
@@ -79,6 +82,14 @@ namespace JobListingSite.Web.Controllers
 
             model.PendingApplicationsPerOffer = pendingCounts;
 
+            var hrUserId = _userManager.GetUserId(User);
+
+            ViewBag.NewReplies = await _context.HRTickets
+        .CountAsync(t =>
+            t.CreatedById == hrUserId
+            && !t.IsReadByHR
+            && t.AdminReply != null
+        );
 
             return View(model);
         }
@@ -270,16 +281,91 @@ namespace JobListingSite.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> CreatedTicket(int page = 1)
         {
-            int pageSize = 5;
+            var hr = await _userManager.GetUserAsync(User);
+            var replied = await _context.HRTickets
+                .Where(t => t.CreatedById == hr.Id && !t.IsReadByHR && t.AdminReply != null)
+                .ToListAsync();
+            replied.ForEach(t => t.IsReadByHR = true);
+            if (replied.Any()) await _context.SaveChangesAsync();
 
-            var user = await _userManager.GetUserAsync(User);
             var tickets = _context.HRTickets
-                .Where(t => t.CreatedById == user.Id)
+                .Where(t => t.CreatedById == hr.Id)
                 .OrderByDescending(t => t.CreatedAt)
-                .ToPagedList(page, pageSize);
+                .ToPagedList(page, 5);
 
             return View(tickets);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResolveTicket(int id)
+        {
+            var ticket = await _context.HRTickets.FindAsync(id);
+            if (ticket == null) return NotFound();
+
+            ticket.Status = TicketStatus.Resolved;
+            ticket.ResolvedAt = DateTime.UtcNow;
+            ticket.IsReadByHR = true;
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Ticket marked as resolved!";
+            return RedirectToAction(nameof(CreatedTicket));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditTicket(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var ticket = await _context.HRTickets
+                .FirstOrDefaultAsync(t => t.Id == id && t.CreatedById == userId);
+            if (ticket == null) return NotFound();
+
+            var vm = new EditTicketViewModel
+            {
+                Id = ticket.Id,
+                Title = ticket.Title,
+                Description = ticket.Description,
+                Priority = ticket.Priority
+            };
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditTicket(EditTicketViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var userId = _userManager.GetUserId(User);
+            var ticket = await _context.HRTickets
+                .FirstOrDefaultAsync(t => t.Id == model.Id && t.CreatedById == userId);
+            if (ticket == null) return NotFound();
+
+            ticket.Title = model.Title;
+            ticket.Description = model.Description;
+            ticket.Priority = model.Priority;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(CreatedTicket));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReplyToTicket(int id, string reply)
+        {
+            var userId = _userManager.GetUserId(User);
+            var ticket = await _context.HRTickets
+                .FirstOrDefaultAsync(t => t.Id == id && t.CreatedById == userId);
+            if (ticket == null) return NotFound();
+
+            ticket.HRReply = reply;
+            ticket.HRRepliedAt = DateTime.UtcNow;
+            ticket.IsReadByAdmin = false;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(CreatedTicket));
+        }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -299,5 +385,6 @@ namespace JobListingSite.Web.Controllers
             return RedirectToAction(nameof(CreatedTicket));
         }
 
+       
     }
 }

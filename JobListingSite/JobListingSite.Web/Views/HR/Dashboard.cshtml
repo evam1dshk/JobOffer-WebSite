@@ -5,215 +5,300 @@
 
 @{
     ViewData["Title"] = "HR Dashboard";
+    Layout = "_Layout";
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
 <style>
-    body {
-        background: linear-gradient(135deg, #43cea2, #185a9d);
-        font-family: 'Segoe UI', sans-serif;
-        overflow-x: hidden;
+  body {
+    background: linear-gradient(135deg, #43cea2, #185a9d);
+    font-family: 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .container-custom {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .dashboard-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+
+  /* Pill-style buttons on top */
+  .dashboard-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+    background: linear-gradient(to right, #43cea2, #185a9d);
+    color: #fff;
+    text-decoration: none;
+    transition: box-shadow .2s ease, transform .2s ease;
+    position: relative;
+  }
+  .dashboard-btn:hover {
+    box-shadow: 0 0 12px rgba(67,206,162,0.6);
+    transform: translateY(-2px);
+  }
+
+  /* Little notification circle */
+  .badge-circle {
+    position: absolute;
+    top: 0; right: 0;
+    transform: translate(50%,-50%);
+    width: 20px; height: 20px;
+    padding: 0;
+    border-radius: 50%;
+    background: #dc3545;
+    color: #fff;
+    font-size: .75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 4px rgba(0,0,0,0.2);
+  }
+
+  /* Stats cards */
+  .stat-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 8px solid;
+  }
+  .border-greenblue { border-color: #43cea2; }
+  .border-lightblue { border-color: #00c6ff; }
+  .border-orange { border-color: #f7971e; }
+  .border-coralred { border-color: #f8576c; }
+
+  /* Table container */
+  .table-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .table thead {
+    background: linear-gradient(to right, #43cea2, #185a9d);
+    color: white;
+    text-align: center;
+  }
+
+  /* Action buttons in table */
+  .btn-dash {
+    font-weight: 600;
+    border: none;
+    padding: 10px 18px;
+    font-size: 1rem;
+    border-radius: 12px;
+    width: 120px;
+    height: 48px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-dash:hover {
+    box-shadow: 0 0 10px rgba(67,206,162,0.6);
+    transform: translateY(-2px);
+  }
+  .btn-edit   { background: linear-gradient(to right, #36d1dc, #5b86e5); color: #fff; }
+  .btn-delete { background: linear-gradient(to right, #f8576c, #ff5858); color: #fff; }
+  .btn-view   { background: linear-gradient(to right, #28a745, #43cea2); color: #fff; }
+  .btn-search { background: linear-gradient(to right, #28a745, #43cea2); color: #fff; }
+  .btn-clear  { background: linear-gradient(to right, #6c757d, #495057); color: #fff; }
+
+  @@media (max-width: 768px) {
+    .container-custom { padding: 0 1rem; }
+    .table thead { display: none; }
+    .table tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
     }
-
-    .container-custom {
-        max-width: 1100px;
-        margin: 0 auto;
+    .table tbody tr {
+      display: block;
+      background: white;
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
     }
-
-    .stat-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        border-left: 8px solid;
-    }
-
-    .border-greenblue { border-color: #43cea2; }
-    .border-lightblue { border-color: #00c6ff; }
-    .border-orange { border-color: #f7971e; }
-    .border-coralred { border-color: #f8576c; }
-
-    .table-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .table thead {
-        background: linear-gradient(to right, #43cea2, #185a9d);
-        color: white;
-        text-align: center;
-    }
-
-    .btn-dash {
-        font-weight: 600;
-        border: none;
-        padding: 10px 18px;
-        font-size: 1rem;
-        border-radius: 12px;
-        width: 120px;
-        height: 48px;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .btn-edit { background: linear-gradient(to right, #36d1dc, #5b86e5); color: white; }
-    .btn-edit:hover { background: linear-gradient(to right, #5b86e5, #36d1dc); box-shadow: 0 0 10px #5b86e5; }
-
-    .btn-delete { background: linear-gradient(to right, #f8576c, #ff5858); color: white; }
-    .btn-delete:hover { background: linear-gradient(to right, #ff5858, #f8576c); box-shadow: 0 0 10px #f8576c; }
-
-    .btn-view { background: linear-gradient(to right, #28a745, #43cea2); color: white; }
-    .btn-view:hover { background: linear-gradient(to right, #43cea2, #28a745); box-shadow: 0 0 10px #28a745; }
-
-    .btn-search { background: linear-gradient(to right, #28a745, #43cea2); color: white; }
-    .btn-clear { background: linear-gradient(to right, #6c757d, #495057); color: white; }
-
-    .btn-green-ombre {
-        background: linear-gradient(to right, #43cea2, #185a9d);
-        color: white;
-        font-weight: 600;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 50px;
-        transition: all 0.3s ease;
-    }
-
-    .btn-green-ombre:hover { box-shadow: 0 0 12px rgba(67, 206, 162, 0.6); transform: scale(1.05); }
-
-    @@media (max-width: 768px) {
-        .container-custom { padding-left: 1rem; padding-right: 1rem; }
-
-        .btn-dash {
-            width: 80px;
-            height: 48px;
-            font-size: 1.2rem;
-        }
-
-        .table thead { display: none; }
-        .table tbody { display: flex; flex-direction: column; gap: 1rem; align-items: center; }
-
-        .table tbody tr {
-            display: block;
-            background: white;
-            border-radius: 16px;
-            padding: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-
-        .table td { display: block; border: none; padding: 0.5rem 0; }
-
-        .btn-dash span { display: none; }
-    }
+    .table td { display: block; border: none; padding: .5rem 0; }
+    .btn-dash span { display: none; }
+  }
 </style>
 
 <div class="container-custom my-5">
-    <div class="card bg-white shadow-sm border-0 mb-5">
-        <div class="card-body p-4">
-            <h2 class="mb-4 text-success"><i class="bi bi-bar-chart-line-fill me-2"></i> HR Dashboard</h2>
 
-            <div class="d-flex justify-content-center gap-3 flex-wrap mb-4">
-                <a asp-action="CreateTicket" class="btn-green-ombre"><i class="fas fa-ticket-alt me-1"></i> Create Ticket</a>
-                <a asp-action="CreatedTicket" class="btn-green-ombre"><i class="fas fa-list me-1"></i> My Tickets</a>
-            </div>
+  <div class="card bg-white shadow-sm border-0 mb-5">
+    <div class="card-body p-4">
+      <h2 class="mb-4 text-success"><i class="fa fa-chart-bar me-2"></i> HR Dashboard</h2>
 
-            <div class="row g-4">
-                <div class="col-md-3"><div class="stat-card border-greenblue"><h6>Total Jobs</h6><h4 class="counter" data-target="@Model.TotalJobs">0</h4></div></div>
-                <div class="col-md-3"><div class="stat-card border-lightblue"><h6>Total Applications</h6><h4 class="counter" data-target="@Model.TotalApplications">0</h4></div></div>
-                <div class="col-md-3"><div class="stat-card border-orange"><h6>Pending</h6><h4 class="counter" data-target="@Model.PendingApplications">0</h4></div></div>
-                <div class="col-md-3"><div class="stat-card border-coralred"><h6>Rejected</h6><h4 class="counter" data-target="@Model.RejectedApplications">0</h4></div></div>
-            </div>
+      <div class="dashboard-actions">
+        <!-- Create Ticket -->
+        <a asp-action="CreateTicket" class="dashboard-btn">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Create Ticket</span>
+        </a>
+
+        <!-- My Tickets -->
+        <a asp-action="CreatedTicket" class="dashboard-btn">
+          <i class="fas fa-list"></i>
+          <span>My Tickets</span>
+          @if ((int)ViewBag.NewReplies > 0)
+          {
+            <span class="badge-circle">@ViewBag.NewReplies</span>
+          }
+        </a>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="stat-card border-greenblue">
+            <h6>Total Jobs</h6>
+            <h4 class="counter" data-target="@Model.TotalJobs">0</h4>
+          </div>
         </div>
+        <div class="col-md-3">
+          <div class="stat-card border-lightblue">
+            <h6>Total Applications</h6>
+            <h4 class="counter" data-target="@Model.TotalApplications">0</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card border-orange">
+            <h6>Pending</h6>
+            <h4 class="counter" data-target="@Model.PendingApplications">0</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card border-coralred">
+            <h6>Rejected</h6>
+            <h4 class="counter" data-target="@Model.RejectedApplications">0</h4>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="table-card">
-        <form method="get" asp-action="Dashboard" class="row g-2 mb-4">
-            <div class="col-sm-5"><input type="text" name="search" class="form-control" placeholder="Search jobs..." value="@Model.SearchQuery" /></div>
-            <div class="col-sm-4">
-                <select name="categoryId" class="form-select">
-                    <option value="">All Categories</option>
-                    @foreach (var cat in Model.AllCategories)
-                    {
-                        <option value="@cat.Value" selected="@(Model.SelectedCategoryId?.ToString() == cat.Value)">@cat.Text</option>
-                    }
-                </select>
-            </div>
-            <div class="col-sm-3 d-flex gap-2">
-                <button type="submit" class="btn-dash btn-search w-100"><i class="fas fa-search"></i><span> Search</span></button>
-                <a href="@Url.Action("Dashboard")" class="btn-dash btn-clear w-100"><i class="fas fa-sync-alt"></i><span> Clear</span></a>
-            </div>
-        </form>
+  <div class="table-card">
+    <form method="get" asp-action="Dashboard" class="row g-2 mb-4">
+      <div class="col-sm-5">
+        <input type="text" name="search" class="form-control"
+               placeholder="Search jobs…" value="@Model.SearchQuery" />
+      </div>
+      <div class="col-sm-4">
+        <select name="categoryId" class="form-select">
+          <option value="">All Categories</option>
+          @foreach (var cat in Model.AllCategories) {
+            <option value="@cat.Value"
+                    selected="@(Model.SelectedCategoryId?.ToString()==cat.Value)">
+              @cat.Text
+            </option>
+          }
+        </select>
+      </div>
+      <div class="col-sm-3 d-flex gap-2">
+        <button type="submit" class="btn-dash btn-search w-100">
+          <i class="fas fa-search"></i><span> Search</span>
+        </button>
+        <a href="@Url.Action("Dashboard")" class="btn-dash btn-clear w-100">
+          <i class="fas fa-sync-alt"></i><span> Clear</span>
+        </a>
+      </div>
+    </form>
 
-        <table class="table">
-            <thead>
-                <tr><th>Title</th><th>Category</th><th>Posted</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-                @foreach (var offer in Model.RecentOffers)
-                {
-                    <tr>
-                        <td>@offer.Title</td>
-                        <td>@offer.Category?.Name</td>
-                        <td>@offer.CreatedAt.ToShortDateString()</td>
-                        <td>
-                            <div class="d-flex flex-wrap justify-content-center gap-2">
-                                <a asp-action="EditJob" asp-route-id="@offer.OfferId" class="btn-dash btn-edit">
-                                    <i class="fas fa-edit"></i> <span>Edit</span>
-                                </a>
-                                <form asp-action="DeleteJob" method="post" asp-route-id="@offer.OfferId" onsubmit="return confirm('Are you sure?');">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn-dash btn-delete">
-                                        <i class="fas fa-trash"></i> <span>Delete</span>
-                                    </button>
-                                </form>
-                                <a asp-action="ViewApplications" asp-route-offerId="@offer.OfferId" class="btn-dash btn-view position-relative">
-                                    <i class="fas fa-eye"></i> <span>View</span>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Posted</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var offer in Model.RecentOffers) {
+          <tr>
+            <td>@offer.Title</td>
+            <td>@offer.Category?.Name</td>
+            <td>@offer.CreatedAt.ToShortDateString()</td>
+            <td>
+              <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a asp-action="EditJob" asp-route-id="@offer.OfferId"
+                   class="btn-dash btn-edit">
+                  <i class="fas fa-edit"></i> <span>Edit</span>
+                </a>
+                <form asp-action="DeleteJob" method="post"
+                      asp-route-id="@offer.OfferId"
+                      onsubmit="return confirm('Are you sure?');">
+                  @Html.AntiForgeryToken()
+                  <button type="submit" class="btn-dash btn-delete">
+                    <i class="fas fa-trash"></i> <span>Delete</span>
+                  </button>
+                </form>
+                <a asp-action="ViewApplications"
+                   asp-route-offerId="@offer.OfferId"
+                   class="btn-dash btn-view position-relative">
+                  <i class="fas fa-eye"></i> <span>View</span>
+                  @if (Model.PendingApplicationsPerOffer.TryGetValue(offer.OfferId, out var c) && c > 0)
+                  {
+                    <span class="badge-circle">@c</span>
+                  }
+                </a>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
 
-                                    @if (Model.PendingApplicationsPerOffer.ContainsKey(offer.OfferId) && Model.PendingApplicationsPerOffer[offer.OfferId] > 0)
-                                    {
-                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" style="font-size: 0.75rem;">
-                                            @Model.PendingApplicationsPerOffer[offer.OfferId]
-                                        </span>
-                                    }
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <nav class="mt-4">
-            @Html.PagedListPager(Model.RecentOffers, page => Url.Action("Dashboard", new { page, search = Model.SearchQuery, categoryId = Model.SelectedCategoryId }), new PagedListRenderOptions { UlElementClasses = new[] { "pagination justify-content-center" }, LiElementClasses = new[] { "page-item" }, PageClasses = new[] { "page-link" } })
-        </nav>
-    </div>
+    <nav class="mt-4">
+      @Html.PagedListPager(
+        Model.RecentOffers,
+        page => Url.Action("Dashboard", new { page, search=Model.SearchQuery, categoryId=Model.SelectedCategoryId }),
+        new PagedListRenderOptions {
+          UlElementClasses = new[] { "pagination justify-content-center" },
+          LiElementClasses = new[] { "page-item" },
+          PageClasses    = new[] { "page-link" }
+        })
+    </nav>
+  </div>
 </div>
 
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
     document.querySelectorAll('.counter').forEach(counter => {
-        const updateCount = () => {
-            const target = +counter.getAttribute('data-target');
-            const count = +counter.innerText;
-            const increment = Math.ceil(target / 30);
-            if (count < target) {
-                counter.innerText = count + increment;
-                setTimeout(updateCount, 20);
-            } else {
-                counter.innerText = target;
-            }
-        };
-        updateCount();
+      const update = () => {
+        const target = +counter.getAttribute('data-target');
+        const current = +counter.innerText;
+        const inc = Math.ceil(target/30);
+        if (current < target) {
+          counter.innerText = current + inc;
+          setTimeout(update, 20);
+        } else {
+          counter.innerText = target;
+        }
+      };
+      update();
     });
-</script>
+  </script>
 }

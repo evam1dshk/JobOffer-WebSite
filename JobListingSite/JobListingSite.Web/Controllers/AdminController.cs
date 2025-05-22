@@ -12,6 +12,8 @@ using JobListingSite.Web.Models.JobListing;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authentication;
 using JobListingSite.Data.Enums;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Net;
 
 namespace JobListingSite.Web.Controllers
 {
@@ -21,13 +23,13 @@ namespace JobListingSite.Web.Controllers
         private readonly JobListingDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-
-
-        public AdminController(JobListingDbContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly IEmailSender? _emailSender;
+        public AdminController(JobListingDbContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IEmailSender? emailSender = null)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _emailSender = emailSender;
         }
         public async Task<IActionResult> Dashboard()
         {
@@ -569,20 +571,25 @@ namespace JobListingSite.Web.Controllers
             return RedirectToAction(nameof(ManageCompanies));
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpGet]
-        public IActionResult ViewTickets(int page = 1)
+        public async Task<IActionResult> ViewTickets(int page = 1)
         {
-            int pageSize = 5;
-            var tickets =  _context.HRTickets
-                .Include(t => t.CreatedBy)
+            const int pageSize = 7;
+            var all = await _context.HRTickets
                 .OrderByDescending(t => t.CreatedAt)
-                .ToPagedList(page, pageSize);
+                .ToListAsync();
 
-            return View(tickets);
+            ViewBag.UnreadHRReplies = all.Count(t => !t.IsReadByAdmin && t.HRReply != null);
+
+            all.Where(t => !t.IsReadByAdmin && t.HRReply != null)
+               .ToList()
+               .ForEach(t => t.IsReadByAdmin = true);
+            await _context.SaveChangesAsync();
+
+            return View(all.ToPagedList(page, pageSize));
         }
 
-        [Authorize(Roles = "Admin")]
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResolveTicket(int id)
@@ -606,18 +613,21 @@ namespace JobListingSite.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReplyToTicket(int id, string reply)
         {
-            var ticket = await _context.HRTickets.FindAsync(id);
-            if (ticket == null)
-            {
-                TempData["ErrorMessage"] = "Ticket not found.";
-                return RedirectToAction(nameof(ViewTickets));
-            }
+            var ticket = await _context.HRTickets.Include(t => t.CreatedBy)
+                                 .FirstOrDefaultAsync(t => t.Id == id);
+            if (ticket == null) return RedirectToAction(nameof(ViewTickets));
 
             ticket.AdminReply = reply;
             ticket.RepliedAt = DateTime.UtcNow;
-            ticket.IsReadByHR = false;
-
+            ticket.IsReadByHR = false;    
             await _context.SaveChangesAsync();
+
+            await _emailSender.SendEmailAsync(
+                ticket.CreatedBy.Email,
+                $"Re: {ticket.Title}",
+                $"<p>New reply from Admin:</p><blockquote>{reply}</blockquote>"
+            );
+
             TempData["SuccessMessage"] = "Reply sent to HR.";
             return RedirectToAction(nameof(ViewTickets));
         }

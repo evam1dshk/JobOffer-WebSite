@@ -38,7 +38,9 @@ namespace JobListingSite.Data.Entities
         public string? AdminReply { get; set; }
 
         public DateTime? RepliedAt { get; set; }
-
+        public string? HRReply { get; set; }
+        public DateTime? HRRepliedAt { get; set; }
+        public bool IsReadByAdmin { get; set; } = true;
         public bool IsReadByHR { get; set; } = true;
 
     }

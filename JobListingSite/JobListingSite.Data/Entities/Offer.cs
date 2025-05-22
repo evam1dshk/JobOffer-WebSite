@@ -27,9 +27,10 @@ namespace JobListingSite.Data.Entities
 
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         [Required(ErrorMessage = "Location is required.")]
         [MaxLength(100)]
-        public string Location { get; set; } = null!;
+        public string Location { get; set; } = string.Empty;
 
     }
 }

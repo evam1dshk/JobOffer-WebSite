@@ -2,22 +2,18 @@
 @using JobListingSite.Data.Enums
 @using X.PagedList.Mvc.Core
 
-
 @{
     ViewData["Title"] = "My Tickets";
     Layout = "_Layout";
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
 <style>
     body {
-        background: linear-gradient(135deg, #43cea2, #185a9d);
+        background: linear-gradient(135deg,#43cea2,#185a9d);
         font-family: 'Segoe UI', sans-serif;
-    }
-
-    td {
-        word-break: break-word;
     }
 
     .card-container {
@@ -25,25 +21,18 @@
         border-radius: 24px;
         padding: 2.5rem;
         margin: 3rem auto;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         max-width: 1100px;
-        animation: fadeInUp 0.6s ease;
-    }
-
-    h2 {
-        font-weight: 700;
-        color: #212529;
-        text-align: center;
-        margin-bottom: 2rem;
+        animation: fadeInUp .6s ease;
     }
 
     .ticket-card {
-        background: #ffffff;
+        background: white;
         border-radius: 16px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         padding: 1.5rem;
         margin-bottom: 1.5rem;
-        transition: transform 0.3s ease;
+        transition: transform .3s ease;
     }
 
         .ticket-card:hover {
@@ -54,68 +43,125 @@
         border-radius: 50px;
         padding: 8px 16px;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: .9rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .badge-pending {
-        background: linear-gradient(to right, #6c757d, #495057);
-        color: white;
+        background: linear-gradient(to right,#6c757d,#495057);
+        color: #fff;
     }
 
     .badge-resolved {
-        background: linear-gradient(to right, #28a745, #43cea2);
-        color: white;
+        background: linear-gradient(to right,#28a745,#43cea2);
+        color: #fff;
     }
 
     .badge-priority-low {
-        background: linear-gradient(to right, #36d1dc, #5b86e5);
-        color: white;
+        background: linear-gradient(to right,#36d1dc,#5b86e5);
+        color: #fff;
     }
 
     .badge-priority-normal {
-        background: linear-gradient(to right, #43cea2, #28a745);
-        color: white;
+        background: linear-gradient(to right,#43cea2,#28a745);
+        color: #fff;
     }
 
     .badge-priority-high {
-        background: linear-gradient(to right, #f7971e, #ffd200);
-        color: white;
+        background: linear-gradient(to right,#f7971e,#ffd200);
+        color: #000;
     }
 
     .badge-priority-urgent {
-        background: linear-gradient(to right, #f8576c, #ff5858);
-        color: white;
+        background: linear-gradient(to right,#f8576c,#ff5858);
+        color: #fff;
     }
 
-    .btn-back {
-        background: linear-gradient(to right, #434343, #000000);
+    .action-buttons {
+        margin-top: 1rem;
+        display: flex;
+        gap: .5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+        .action-buttons .btn {
+            font-size: .85rem;
+            padding: 6px 10px;
+            transition: box-shadow .2s, transform .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+        }
+
+    .btn-ombre {
+        background: linear-gradient(to right,#43cea2,#185a9d);
+        color: #fff;
         border: none;
-        color: white;
-        font-weight: 600;
-        border-radius: 12px;
-        padding: 12px 24px;
-        transition: all 0.3s ease;
+        border-radius: 8px;
     }
 
-    .btn-back:hover {
-        color: #43cea2;
-        box-shadow: 0 0 15px rgba(24, 90, 157, 0.7);
-        transform: scale(1.05);
+        .btn-ombre:hover {
+            box-shadow: 0 4px 12px rgba(24,90,157,0.3);
+            transform: translateY(-2px);
+        }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+    }
+
+        .btn-secondary:hover {
+            box-shadow: 0 4px 12px rgba(108,117,125,0.3);
+            transform: translateY(-2px);
+        }
+
+    .btn-danger {
+        background: linear-gradient(to right,#f8576c,#ff5858);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+    }
+
+        .btn-danger:hover {
+            box-shadow: 0 4px 12px rgba(248,87,108,0.3);
+            transform: translateY(-2px);
+        }
+
+    .reply-form {
+        display: none;
+        margin-top: 1rem;
+    }
+
+        .reply-form textarea {
+            width: 100%;
+            padding: .5rem;
+            border-radius: 8px;
+            margin-bottom: .5rem;
+            resize: vertical;
+        }
+
+    @@media(max-width:576px) {
+        .action-buttons {
+            justify-content: center;
+        }
+
+        .btn-text {
+            display: none;
+        }
     }
 
     @@keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @@media (max-width: 768px) {
-        .card-container {
-            padding: 2rem 1rem;
+        from {
+            opacity: 0;
+            transform: translateY(30px);
         }
 
-        .ticket-card {
-            padding: 1.2rem;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 </style>
@@ -123,127 +169,194 @@
 <div class="card-container">
     <h2><i class="fas fa-ticket-alt me-2"></i> My Support Tickets</h2>
 
-    @if (Model.Any())
+    @if (!Model.Any())
     {
-        foreach (var ticket in Model)
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-inbox fa-3x mb-3"></i>
+            <h5>No support tickets found.</h5>
+        </div>
+    }
+    else
+    {
+        @foreach (var ticket in Model)
         {
             <div class="ticket-card">
+                <!-- Title + Status + Priority -->
                 <div class="d-flex justify-content-between flex-wrap align-items-center mb-2">
-                    <h5 class="fw-bold"><i class="fas fa-tag me-2"></i> @ticket.Title</h5>
-
+                    <h5 class="fw-bold"><i class="fas fa-tag me-2"></i>@ticket.Title</h5>
                     <div class="d-flex flex-wrap gap-2">
-                        @if (ticket.Status == TicketStatus.Open)
-                        {
-                            <span class="badge-status badge-pending">Pending</span>
-                        }
-                        else
-                        {
-                            <span class="badge-status badge-resolved">Resolved</span>
-                        }
-
-                        @if (!string.IsNullOrEmpty(ticket.AdminReply))
-                        {
-                            <div class="alert alert-info mt-2">
-                                <strong>Admin Reply:</strong><br />
-                                @ticket.AdminReply <br />
-                                <small class="text-muted">on @ticket.RepliedAt?.ToLocalTime().ToString("g")</small>
-                            </div>
-                        }
-
-
+                        <span class="badge-status @(ticket.Status == TicketStatus.Open ? "badge-pending" : "badge-resolved")">
+                            @(ticket.Status == TicketStatus.Open ? "Pending" : "Resolved")
+                        </span>
                         <span class="badge-priority @GetPriorityClass(ticket.Priority)">
                             @ticket.Priority
                         </span>
                     </div>
                 </div>
 
+                <!-- Description -->
                 <p class="text-muted mt-2" title="@ticket.Description">
                     <i class="fas fa-align-left me-1"></i>
-                    @(ticket.Description.Length > 150 ? ticket.Description.Substring(0, 150) + "..." : ticket.Description)
+                    @(ticket.Description.Length > 150
+                        ? ticket.Description.Substring(0, 150) + "…"
+                        : ticket.Description)
                 </p>
 
-                <div class="d-flex flex-wrap gap-3 mt-3">
-                    <span><i class="fas fa-calendar-alt text-success me-1"></i> <strong>Created:</strong> @ticket.CreatedAt.ToLocalTime().ToShortDateString()</span>
+                <!-- Created At -->
+                <div class="mt-2">
+                    <i class="fas fa-calendar-alt text-success me-1"></i>
+                    <small>@ticket.CreatedAt.ToLocalTime().ToString("g")</small>
                 </div>
 
-                <form id="deleteForm-@ticket.Id" asp-action="DeleteTicket" method="post" asp-route-id="@ticket.Id" class="d-inline">
-                    @Html.AntiForgeryToken()
-                    <button type="button" class="btn btn-ombre btn-sm" onclick="confirmDelete(@ticket.Id)">
-                        <i class="fas fa-trash"></i> Delete
+                <!-- Admin's Reply, if any -->
+                @if (!string.IsNullOrEmpty(ticket.AdminReply))
+                {
+                    <div class="alert alert-info mt-3">
+                        <strong>Admin replied:</strong>
+                        <p class="mb-1">@ticket.AdminReply</p>
+                        <small class="text-muted">on @ticket.RepliedAt?.ToLocalTime().ToString("g")</small>
+                    </div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    @* Resolve *@
+                    @if (ticket.Status == TicketStatus.Open)
+                    {
+                        <button type="button"
+                    class="btn btn-secondary btn-sm"
+                    onclick="confirmResolve(@ticket.Id)">
+                            <i class="fas fa-check"></i> <span class="btn-text">Resolve</span>
+                        </button>
+                    }
+
+                    @if (ticket.Status == TicketStatus.Open)
+                    {
+                        <a asp-action="EditTicket" class="btn btn-ombre btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    }
+
+                    @* Toggle Reply Form *@
+                    <button type="button"
+                    class="btn btn-ombre btn-sm reply-toggle"
+                    data-ticket="@ticket.Id">
+                        <i class="fas fa-reply"></i> <span class="btn-text">Reply</span>
                     </button>
-                </form>
+
+                    @* Delete *@
+                    <button type="button"
+                    class="btn btn-danger btn-sm"
+                    onclick="confirmDelete(@ticket.Id)">
+                        <i class="fas fa-trash"></i> <span class="btn-text">Delete</span>
+                    </button>
+                </div>
+
+                @* Inline Reply Form *@
+                <div class="reply-form" id="reply-form-@ticket.Id">
+                    <form asp-action="ReplyToTicket" asp-controller="HR" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@ticket.Id" />
+                        <textarea name="reply" placeholder="Write your reply…" required></textarea>
+                        <button type="submit" class="btn btn-ombre btn-sm">
+                            <i class="fas fa-paper-plane me-1"></i> Send
+                        </button>
+                    </form>
+                </div>
             </div>
         }
-        <div class="mt-4">
-            @Html.PagedListPager(Model, page => Url.Action("CreatedTicket", new { page }), new PagedListRenderOptions
-        {
-        UlElementClasses = new[] { "pagination justify-content-center" },
-        LiElementClasses = new[] { "page-item" },
-        PageClasses = new[] { "page-link" }
+
+        <div class="mt-4 text-center">
+            @Html.PagedListPager(
+        Model,
+        page => Url.Action("CreatedTicket", new { page }),
+        new PagedListRenderOptions {
+        UlElementClasses  = new[] { "pagination justify-content-center" },
+        LiElementClasses  = new[] { "page-item" },
+        PageClasses       = new[] { "page-link" }
         })
-        </div>
-    }
-    else
-    {
-        <div class="text-center text-muted my-5">
-            <i class="fas fa-inbox fa-3x mb-3"></i>
-            <h5>No support tickets found.</h5>
         </div>
     }
 
     <div class="text-center mt-4">
-        <a asp-action="Dashboard" asp-controller="HR" class="btn btn-back">
-            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        <a asp-action="Dashboard"
+           asp-controller="HR"
+           class="btn btn-ombre">
+            <i class="fas fa-arrow-left me-1"></i>
+            <span class="btn-text">Back to Dashboard</span>
         </a>
     </div>
 </div>
 
-@functions {
-    public string GetPriorityClass(TicketPriority priority)
-    {
-        return priority switch
-        {
-            TicketPriority.Low => "badge-priority-low",
-            TicketPriority.Normal => "badge-priority-normal",
-            TicketPriority.High => "badge-priority-high",
-            TicketPriority.Urgent => "badge-priority-urgent",
-            _ => "badge-priority-normal"
-        };
-    }
-}
-
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    @if (TempData["TicketCreated"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Ticket Submitted!',
-                text: 'Your support ticket was created successfully!',
-                confirmButtonColor: '#28a745'
-            });
-        </script>
-    }
-
     <script>
-        function confirmDelete(ticketId) {
+        // toggle the inline reply form
+        document.querySelectorAll('.reply-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.ticket;
+                const form = document.getElementById(`reply-form-${id}`);
+                form.style.display = form.style.display === 'block'
+                    ? 'none'
+                    : 'block';
+            });
+        });
+
+        function confirmDelete(id) {
             Swal.fire({
-                title: 'Are you sure?',
-                text: "This ticket will be permanently deleted!",
+                title: 'Delete this ticket?',
+                text: "This cannot be undone!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete it!',
-                background: 'white',
-                color: '#212529'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('deleteForm-' + ticketId).submit();
+                confirmButtonText: 'Yes, delete'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    const f = document.createElement('form');
+                    f.method = 'post';
+                    f.action = '@Url.Action("DeleteTicket","HR")';
+                    const inp = document.createElement('input');
+                    inp.type = 'hidden'; inp.name = 'id'; inp.value = id;
+                    f.appendChild(inp);
+                    document.body.appendChild(f);
+                    f.submit();
+                }
+            });
+        }
+
+        function confirmResolve(id) {
+            Swal.fire({
+                title: 'Mark as resolved?',
+                text: "You can still reply afterward.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, resolve it!'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    const f = document.createElement('form');
+                    f.method = 'post';
+                    f.action = '@Url.Action("ResolveTicket","HR")';
+                    const inp = document.createElement('input');
+                    inp.type = 'hidden'; inp.name = 'id'; inp.value = id;
+                    f.appendChild(inp);
+                    document.body.appendChild(f);
+                    f.submit();
                 }
             });
         }
     </script>
+}
+
+    @functions {
+    public string GetPriorityClass(TicketPriority p) => p switch
+    {
+        TicketPriority.Low => "badge-priority-low",
+        TicketPriority.Normal => "badge-priority-normal",
+        TicketPriority.High => "badge-priority-high",
+        TicketPriority.Urgent => "badge-priority-urgent",
+        _ => "badge-priority-normal"
+    };
 }
