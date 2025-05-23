@@ -18,7 +18,6 @@ var awsCredentials = new BasicAWSCredentials(
     awsOptions["SecretKey"]
 );
 
-// ✅ Register the Amazon S3 service with credentials
 builder.Services.AddSingleton<IAmazonS3>(sp =>
     new AmazonS3Client(awsCredentials, RegionEndpoint.GetBySystemName(awsOptions["Region"]))
 );
@@ -30,9 +29,6 @@ builder.Services.AddDbContext<JobListingDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
-
-
-// ✅ Identity setup
 builder.Services.AddDefaultIdentity<User>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
@@ -48,14 +44,12 @@ builder.Services.AddDefaultIdentity<User>(options =>
 .AddEntityFrameworkStores<JobListingDbContext>()
 .AddDefaultTokenProviders();
 
-// ✅ Role policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
     options.AddPolicy("RequireHRRole", policy => policy.RequireRole("HR"));
 });
 
-// ✅ MVC + Razor setup
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -69,11 +63,10 @@ using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.AccessDeniedPath = "/AccessDenied"; // <- simpler path
+    options.AccessDeniedPath = "/AccessDenied"; 
 });
 
 
-// ✅ Middleware setup
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

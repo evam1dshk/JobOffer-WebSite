@@ -247,11 +247,19 @@
                     </button>
 
                     @* Delete *@
-                    <button type="button"
-                    class="btn btn-danger btn-sm"
-                    onclick="confirmDelete(@ticket.Id)">
-                        <i class="fas fa-trash"></i> <span class="btn-text">Delete</span>
-                    </button>
+                   <form id="deleteForm-@ticket.Id"
+             asp-action="DeleteTicket"
+             asp-controller="HR"
+             asp-route-id="@ticket.Id"
+             method="post"
+             class="d-inline">
+           @Html.AntiForgeryToken()
+           <button type="button"
+                   class="btn btn-danger btn-sm"
+                   onclick="confirmDelete(@ticket.Id)">
+               <i class="fas fa-trash"></i> <span class="btn-text">Delete</span>
+           </button>
+       </form>
                 </div>
 
                 @* Inline Reply Form *@
@@ -304,27 +312,20 @@
             });
         });
 
-        function confirmDelete(id) {
-            Swal.fire({
-                title: 'Delete this ticket?',
-                text: "This cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete'
-            }).then(res => {
-                if (res.isConfirmed) {
-                    const f = document.createElement('form');
-                    f.method = 'post';
-                    f.action = '@Url.Action("DeleteTicket","HR")';
-                    const inp = document.createElement('input');
-                    inp.type = 'hidden'; inp.name = 'id'; inp.value = id;
-                    f.appendChild(inp);
-                    document.body.appendChild(f);
-                    f.submit();
-                }
-            });
+       function confirmDelete(ticketId) {
+      Swal.fire({
+        title: 'Delete this ticket?',
+        text: "This cannot be undone!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, delete'
+      }).then(res => {
+        if (res.isConfirmed) {
+          document.getElementById(`deleteForm-${ticketId}`).submit();
+        }
+      });
         }
 
         function confirmResolve(id) {

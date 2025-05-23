@@ -131,7 +131,7 @@ namespace JobListingSite.Web.Controllers
 
             _context.JobApplications.Add(application);
             await _context.SaveChangesAsync();
-
+            
             TempData["SuccessMessage"] = "Successfully applied for the job!";
 
             if (!string.IsNullOrEmpty(offer.Company?.CompanyProfile?.ContactEmail))
@@ -142,7 +142,6 @@ namespace JobListingSite.Web.Controllers
                     $"A new application was received for your job offer: <strong>{offer.Title}</strong>."
                 );
             }
-
             return RedirectToAction("Details", new { id = jobId });
         }
     }

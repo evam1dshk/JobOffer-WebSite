@@ -384,7 +384,5 @@ namespace JobListingSite.Web.Controllers
             TempData["SuccessMessage"] = "Ticket deleted successfully!";
             return RedirectToAction(nameof(CreatedTicket));
         }
-
-       
     }
 }
